@@ -1,0 +1,1 @@
+var Render=new Render;Render.funcs.defaultValue=function(e,n){return e?e:n};
