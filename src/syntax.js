@@ -5,7 +5,9 @@
 function initSynctax(items, cache) {
     for (var i = 0; i < items.length; i++) {
         var item = items[i];
-        initRepeat(item, cache);
+        if (!initBind(item, cache)) {
+            initRepeat(item, cache);
+        }
     }
 }
 /**
@@ -13,9 +15,20 @@ function initSynctax(items, cache) {
  * @param item
  * @param cache
  */
-//function initFunc(item, cache) {
-//    var func = items[i].attributes['data-bind-func'];
-//}
+function initBind(item, cache) {
+    var id = item.attributes['data-bind-func'];
+    if (id) {
+        var name = item.attributes['name'].value;
+        var funcBody = '(function ($scope,func,vo){return ' + runTemplate('{' + name + '|' + id.value + '}') + ';})';
+        try {
+            cache['xdf-bind-' + name] = eval(funcBody);
+            return true;
+        } catch (e) {
+            console.log('解析bind模板' + id.value + '出错，' + e.message);
+        }
+    }
+    return false;
+}
 /**
  * 处理循环
  * @param item
@@ -32,7 +45,7 @@ function initRepeat(item, cache) {
         } catch (e) {
             cache['xdf-repeat-' + id.value] = function () {
             };
-            console.log('解析repeat模板' + id + '出错，' + e.message);
+            console.log('解析repeat模板' + id.value + '出错，' + e.message);
         }
     }
 }
@@ -118,7 +131,7 @@ function runFuncString(funcs, i) {
  */
 function runWord(word) {
     if (word.length > 0) {
-        if (word.charAt(0) == '$' || isNumber(word) || word.charAt(0) == '"' || word.charAt(0) == "'") {
+        if (word[0] == '$' || isNumber(word) || word[0] == '"' || word[0] == "'") {
             return word;
         } else {
             return "getValue('" + word + "',vo)";

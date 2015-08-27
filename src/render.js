@@ -4,6 +4,8 @@
 function Render() {
     //全局变量
     this.$scope = {};
+    //可绑定的key列表
+    this.$bindKey = {};
     //缓存
     this.cache = {};
     //内部函数
@@ -23,22 +25,26 @@ Render.prototype.bindData = function (data, name) {
     if (!name) {
         name = 'data';
     }
-    if (!this.$scope[name]) {
-        this.$scope[name] = {};
-    }
+    this.$scope[name] = data;
+    this.$bindKey[name] = [];
     for (var key in data) {
-        var kv = getNameValue(key, data);
-        for (var i = 0; i < kv.length; i++) {
-            this.$scope[name][kv[i][0]] = kv[i][1];
+        var k = getName(key, data);
+        for (var i = 0; i < k.length; i++) {
+            this.$bindKey[name].push(k[i]);
         }
     }
-    for (var key in this.$scope[name]) {
+
+    for (var j = 0; j < this.$bindKey[name].length; j++) {
+        var key = this.$bindKey[name][j];
         var items = document.getElementsByName(key);
-        if (items) {
-            for (var i = 0; i < items.length; i++) {
-                setValue(items[i], this.$scope[name][key]);
-                items[i].style.display = '';
+        for (var i = 0; i < items.length; i++) {
+            var xf = this.cache['xdf-bind-' + key];
+            if (xf) {
+                setValue(items[i], xf(this.$scope, this.funcs, this.$scope[name]));
+            } else {
+                setValue(items[i], getValue(key, this.$scope[name]));
             }
+            items[i].style.display = '';
         }
     }
 }
@@ -50,7 +56,7 @@ Render.prototype.bindData = function (data, name) {
 Render.prototype.bindName = function (name, value) {
     var items = document.getElementsByName(name);
     if (items) {
-        this.$scope[name] = value;
+        //this.$scope[name] = value;
         for (var i = 0; i < items.length; i++) {
             setValue(items[i], value);
             items[i].style.display = '';
@@ -77,7 +83,11 @@ Render.prototype.bindRepeatData = function (data, id) {
             tmp = document.createElement(item.tagName);
             insertAfter(tmp, nextItem);
         }
-        tmp.innerHTML = this.runFunc(id, data[i]);
+        var func = this.cache['xdf-repeat-' + id];
+        if (func) {
+            tmp.innerHTML = func(this.$scope, this.funcs, data[i]);
+        }
+
         tmp.style.display = '';
         nextItem = tmp;
     }
@@ -86,19 +96,7 @@ Render.prototype.bindRepeatData = function (data, id) {
     }
 }
 
-/**
- * 处理函数
- * @param funcString
- * @param val
- * @returns {*}
- */
-Render.prototype.runFunc = function (id, vo) {
-    var func = this.cache['xdf-repeat-' + id];
-    if (func) {
-        return func(this.$scope, this.funcs, vo);
-    }
-    return '';
-}
+
 /**
  * 增加自定义函数
  * @param func

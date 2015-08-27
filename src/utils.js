@@ -20,12 +20,8 @@ function insertAfter(newEl, targetEl) {
  * @returns {*}
  */
 function getNextSibling(ele) {
-    if (ele.nextSibling) {
-        if (ele.nextSibling.tagName == ele.tagName) {
-            return ele.nextSibling;
-        } else {
-            return getNextSibling(ele.nextSibling)
-        }
+    if (ele.nextElementSibling && ele.nextElementSibling.tagName == ele.tagName) {
+        return ele.nextElementSibling;
     } else {
         return false;
     }
@@ -64,6 +60,28 @@ function getNameValue(key, data) {
             var tkv = getNameValue(k, value);
             for (var i = 0; i < tkv.length; i++) {
                 names.push([key + '.' + tkv[i][0], tkv[i][1]]);
+            }
+        }
+        return names;
+    }
+}
+/**
+ * 取数组的key全集
+ * @param key
+ * @param data
+ * @returns {*}
+ */
+function getName(key, data) {
+    var value = data[key];
+    var type = typeof value;
+    if (type == 'string' || type == 'number') {
+        return [key];
+    } else {
+        var names = [];
+        for (var k in value) {
+            var tkv = getName(k, value);
+            for (var i = 0; i < tkv.length; i++) {
+                names.push(key + '.' + tkv[i]);
             }
         }
         return names;
