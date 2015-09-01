@@ -1,14 +1,18 @@
 (function (d, r, x, $) {
     x.isInit = false;
     x.ready = function (callback) {
-        x.isInit = true;
-        if (typeof callback === 'function') {
+        if (!x.isInit) {
+            if (typeof callback === 'function') {
+                x.callback = callback;
+            }
+        } else {
             callback();
         }
     };
     x.init = function () {
         if (r) {
             r.init(d.all);
+            x.isInit = true;
             if (x.callback) {
                 x.callback();
             }

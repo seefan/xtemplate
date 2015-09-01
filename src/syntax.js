@@ -129,14 +129,97 @@
      * @param word
      */
     function runValue(word) {
+        var val = '';
         if (word.length > 0) {
-            if (word[0] === '$' || r.util.isNumber(word) || word[0] === '"' || word[0] === "'") {
-                return word;
-            } else {
-                return "my.util.getValue('" + word + "',vo)";
+            var words = splitWord(word);
+            for (var i = 0; i < words.length; i++) {
+                switch (words[i][0]) {
+                    case '+':
+                    case "-":
+                    case '*':
+                    case '/':
+                    case '(':
+                    case ')':
+                    case '$':
+                    case "'":
+                    case '"':
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        val += words[i];
+                        break;
+                    default :
+                        val += "my.util.getValue('" + words[i] + "',vo)";
+                        break;
+                }
             }
         }
-        return '""';
+        return val == '' ? "''" : val;
+    }
+
+    function splitWord(word) {
+        var arr = [], start = 0, end = 0, key, pop = 0;
+        for (var i = 0; i < word.length; i++) {
+            switch (word[i]) {
+                case '+':
+                case '-':
+                case '*':
+                case '/':
+                    if (i > start) {
+                        key = word.substring(start, i);
+                        if (key.trim() != '') {
+                            arr.push(key.trim());
+                        }
+                    }
+                    arr.push(word[i]);
+                    start = i + 1;
+                    break;
+                case '(':
+                case ')':
+                    arr.push(word[i]);
+                    start = i + 1;
+                    break;
+                case '"':
+                case "'":
+                    if (i > start) {
+                        key = word.substring(start, i);
+                        if (key.trim() != '') {
+                            arr.push(key.trim());
+                        }
+                    }
+                    end = getEnd(word, i);
+                    if (end > 0) {
+                        arr.push(word.substring(i, end + 1));
+                        i = end + 1;
+                        start = i + 1;
+                    }
+                    break;
+            }
+
+        }
+        if (word.length > start) {
+            key = word.substring(start, word.length);
+            if (key.trim() != '') {
+                arr.push(key.trim());
+            }
+        }
+        return arr;
+    }
+
+    function getEnd(word, i) {
+        for (var j = i + 1; j < word.length; j++) {
+            if (word[j] == word[i]) {
+                return j;
+            }
+        }
+        return 0;
     }
 
     /**

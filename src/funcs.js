@@ -50,7 +50,7 @@
             val = new Date(parseInt(val));
         }
         if(!fmt){
-            fmt='yyyy-mm-dd hh:mm:ss';
+            fmt='yyyy-MM-dd hh:mm:ss';
         }
         var format_data_o = {
             "M+": val.getMonth() + 1,                 //月份
