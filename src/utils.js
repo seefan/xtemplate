@@ -39,10 +39,20 @@
                 ele.value = value;
                 break;
             default:
-                ele.innerText = value;
+                ele.innerHTML = value;
                 break;
         }
 
+    }
+    /**
+     * 过滤html
+     * @param html
+     * @returns {string}
+     */
+    u.html = function (html) {
+        html = html.replace(/</g, '&lt;');    //置换符号<
+        html = html.replace(/>/g, '&gt;');    //置换符号>
+        return html;
     }
     /**
      * 取数组的key全集

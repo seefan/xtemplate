@@ -36,12 +36,18 @@
 
             var items = document.getElementsByName(key);
             for (var i = 0; i < items.length; i++) {
-                var xf = this.cache['xdf-bind-' + key];
+                var xf = this.cache['xdf-bind-' + key], value;
                 if (xf) {
-                    this.util.setValue(items[i], xf(this, item));
+                    value = xf(this, item);
                 } else {
-                    this.util.setValue(items[i], this.util.getValue(key, item));
+                    value = this.util.getValue(key, item);
                 }
+                var isHtml = items[i].attributes['data-bind-html'];
+                if (!(isHtml && isHtml.value === 'true')) {
+                    value = this.util.html(value);
+                }
+
+                this.util.setValue(items[i], value);
                 items[i].style.display = '';
             }
         }

@@ -1,5 +1,6 @@
 (function (d, r, x, $) {
     x.isInit = false;
+    x.ajax = $;
     x.ready = function (callback) {
         if (!x.isInit) {
             if (typeof callback === 'function') {
@@ -46,6 +47,13 @@
         if (x.isInit) {
             $.ajax(opt);
         }
+    }
+    /**
+     * 设置ajax类，默认为jquery
+     * @param ajax
+     */
+    x.setAjax = function (ajax) {
+        this.ajax = ajax;
     }
     if (d.readyState === 'complete') {
         x.init();

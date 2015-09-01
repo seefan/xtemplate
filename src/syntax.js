@@ -48,9 +48,11 @@
                 if (end === -1) {
                     end = tmpl.length;
                 }
-                word = tmpl.substring(start + 1, end);
+                word = tmpl.substring(start + 1, end).trim();
                 result.push(runText(tmpl.substring(i, start)));
-                result.push(runKeyword(word));
+                if (word != '') {
+                    result.push(runKeyword(word));
+                }
             } else {
                 result.push(runText(tmpl.substring(i)));
                 end = tmpl.length;
@@ -79,12 +81,22 @@
      * @returns {*}
      */
     function runKeyword(funcString) {
+        var filterHtml = true;
+        if (funcString[0] == '#') {
+            funcString = funcString.substring(1);
+            filterHtml = false;
+        }
         var f = funcString.split('|');
         if (f.length > 0) {
-            return runFuncString(f, f.length - 1);
+            if (filterHtml) {
+                return 'Render.util.html(' + runFuncString(f, f.length - 1) + ')';
+            } else {
+                return runFuncString(f, f.length - 1);
+            }
         }
         return '""';
     }
+
 
     /**
      * 组合出函数结构
@@ -164,6 +176,11 @@
         return val == '' ? "''" : val;
     }
 
+    /**
+     * 拆分单词
+     * @param word
+     * @returns {Array}
+     */
     function splitWord(word) {
         var arr = [], start = 0, end = 0, key, pop = 0;
         for (var i = 0; i < word.length; i++) {
@@ -184,7 +201,7 @@
                 case '(':
                 case ')':
                     arr.push(word[i]);
-                    start = i + 1;
+                    start = i;
                     break;
                 case '"':
                 case "'":
@@ -197,7 +214,7 @@
                     end = getEnd(word, i);
                     if (end > 0) {
                         arr.push(word.substring(i, end + 1));
-                        i = end + 1;
+                        i = end;
                         start = i + 1;
                     }
                     break;
@@ -213,6 +230,12 @@
         return arr;
     }
 
+    /**
+     * 根据单词开始取结尾
+     * @param word
+     * @param i
+     * @returns {*}
+     */
     function getEnd(word, i) {
         for (var j = i + 1; j < word.length; j++) {
             if (word[j] == word[i]) {

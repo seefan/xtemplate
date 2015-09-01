@@ -49,8 +49,8 @@
         if (typeof(val) != 'object') {
             val = new Date(parseInt(val));
         }
-        if(!fmt){
-            fmt='yyyy-MM-dd hh:mm:ss';
+        if (!fmt) {
+            fmt = 'yyyy-MM-dd hh:mm:ss';
         }
         var format_data_o = {
             "M+": val.getMonth() + 1,                 //月份
@@ -87,7 +87,8 @@
      * @param val
      * @returns {*}
      */
-    f.noFunc=function(val){
+    f.noFunc = function (val) {
         return val;
     }
+
 })(window.Render.funcs);
