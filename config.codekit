@@ -73,7 +73,7 @@
 		"outputAbbreviatedPath": "\/xtemplate.min.js",
 		"outputPathIsOutsideProject": 0,
 		"outputPathIsSetByUser": 1,
-		"outputStyle": 0,
+		"outputStyle": 2,
 		"syntaxCheckerStyle": 0
 		},
 	"\/src\/render.js": {

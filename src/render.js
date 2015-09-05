@@ -1,4 +1,5 @@
 (function (document, r) {
+    'use strict';
     //全局变量
     r.$scope = {};
     //可绑定的key列表
@@ -80,24 +81,14 @@
         if (!data || data.length < 1) {
             return;
         }
-        var nextItem = item;
+        var html='';
         for (var i = 0; i < data.length; i++) {
-            var tmp = this.util.getNextSibling(nextItem);
-            if (!tmp) {
-                tmp = document.createElement(item.tagName);
-                this.util.insertAfter(tmp, nextItem);
-            }
             var func = this.cache['xdf-repeat-' + id];
             if (func) {
-                tmp.innerHTML = func(this, data[i]);
+                html+= func(this, data[i]);
             }
-
-            tmp.style.display = '';
-            nextItem = tmp;
         }
-        while ((nextItem = this.util.getNextSibling(nextItem)) != false) {
-            nextItem.style.display = 'none';
-        }
+        item.innerHTML=html;
     }
 
 

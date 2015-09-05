@@ -1,4 +1,4 @@
-(function (u) {
+(function (w, u) {
     'use strict';
     /**
      * 在指定对象平级附加一个对象
@@ -115,4 +115,38 @@
             return '';
         }
     }
-})(window.Render.util);
+    /**
+     * 取url的参数
+     * @returns {{}}
+     */
+    u.getUrlQuery = function () {
+        var args = {};
+
+        var query = w.location.search;//获取查询串
+        if (query && query.length > 1) {
+            query = query.substring(1);
+            var pos = query.indexOf('#');
+            if (pos != -1) {
+                query = query.substring(0, pos)
+            }
+            var pairs = query.split("&")
+            for (var i = 0; i < pairs.length; i++) {
+                pos = pairs[i].indexOf('=');//查找name=value
+                if (pos == -1) {
+                    continue;
+                }
+                //如果没有找到就跳过
+                var argname = pairs[i].substring(0, pos);//提取name
+                if (!argname) {
+                    continue;
+                }
+                var value = pairs[i].substring(pos + 1);//提取value
+                if (!value) {
+                    continue;
+                }
+                args[argname] = decodeURIComponent(value);//存为属性
+            }
+        }
+        return args;
+    }
+})(window, window.Render.util);

@@ -68,7 +68,7 @@
      */
     function runText(text) {
         if (text) {
-            return '"' + text.replace(/\"/g, '\\"').replace(/\r/g, '\\r').replace(/\n/g, '\\n') + '"';
+            return '"' + text.replace(/\"/g, '\\"').replace(/\r/g, '\\r').replace(/\n/g, '\\n').replace('data-bind-src','src') + '"';
         } else {
             return '""';
         }
@@ -268,7 +268,6 @@
         if (f) {
             return f;
         }
-        item.style.display = 'none';
         this.cache['xd-repeat-' + id] = item;
         var funcBody = '(function (my,vo){var $scope=my.$scope;return ' + runTemplate(item.innerHTML) + ';})';
         try {
