@@ -21,9 +21,10 @@
         }
         this.$scope[name] = data;
         this.$bindKey[name] = [];
-        for (var key in data) {
-            var k = this.util.getName(key, data);
-            for (var i = 0; i < k.length; i++) {
+        var i = 0;
+        for (var tkey in data) {
+            var k = this.util.getName(tkey, data);
+            for (i = 0; i < k.length; i++) {
                 this.$bindKey[name].push(k[i]);
             }
         }
@@ -36,7 +37,7 @@
             }
 
             var items = document.getElementsByName(key);
-            for (var i = 0; i < items.length; i++) {
+            for (i = 0; i < items.length; i++) {
                 var xf = this.cache['xdf-bind-' + key], value;
                 if (xf) {
                     value = xf(this, item);
@@ -52,7 +53,7 @@
                 items[i].style.display = '';
             }
         }
-    }
+    };
     /**
      * 重新给某个对象绑定新的值
      * @param name
@@ -67,7 +68,7 @@
                 items[i].style.display = '';
             }
         }
-    }
+    };
     /**
      * 循环绑定数据值
      * @param id 缓存范围的id
@@ -81,15 +82,15 @@
         if (!data || data.length < 1) {
             return;
         }
-        var html='';
+        var html = '';
         for (var i = 0; i < data.length; i++) {
             var func = this.cache['xdf-repeat-' + id];
             if (func) {
-                html+= func(this, data[i]);
+                html += func(this, data[i]);
             }
         }
-        item.innerHTML=html;
-    }
+        item.innerHTML = html;
+    };
 
 
     /**
@@ -101,5 +102,5 @@
         if (func && name) {
             this.funcs[name] = func;
         }
-    }
+    };
 })(document, window.Render = {});

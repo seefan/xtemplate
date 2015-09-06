@@ -1,5 +1,4 @@
 (function (r) {
-    'use strict';
 
     /**
      * 处理绑定函数
@@ -8,11 +7,14 @@
      */
     function initBind(item, cache) {
         var id = item.attributes['data-bind-func'];
-        if (id) {
-            var name = item.attributes['name'].value;
-            var funcBody = '(function (my,vo){var $scope=my.$scope;return ' + runTemplate('{' + name + '|' + id.value + '}') + ';})';
+        if (id && item.attributes.name) {
+            var name = item.attributes.name.value;
+
+            var funcBody = 'var $scope=my.$scope;return ' + runTemplate('{' + name + '|' + id.value + '}') + ';';
             try {
-                cache['xdf-bind-' + name] = eval(funcBody);
+                /* jshint ignore:start */
+                cache['xdf-bind-' + name] = new Function('my', 'vo', funcBody);
+                /* jshint ignore:end */
                 return true;
             } catch (e) {
                 console.log('解析bind模板' + id.value + '出错，' + e.message);
@@ -50,7 +52,7 @@
                 }
                 word = tmpl.substring(start + 1, end).trim();
                 result.push(runText(tmpl.substring(i, start)));
-                if (word != '') {
+                if (word !== '') {
                     result.push(runKeyword(word));
                 }
             } else {
@@ -67,10 +69,10 @@
      * @param text
      */
     function runText(text) {
-        if (text) {
-            return '"' + text.replace(/\"/g, '\\"').replace(/\r/g, '\\r').replace(/\n/g, '\\n').replace('data-bind-src','src') + '"';
+        if (typeof(text) == 'string') {
+            return '"' + text.replace(/\"/g, '\\"').replace(/\r/g, '\\r').replace(/\n/g, '\\n').replace('data-bind-src', 'src') + '"';
         } else {
-            return '""';
+            return r.util.getStringValue(text);
         }
     }
 
@@ -125,7 +127,7 @@
      */
     function runFunc(funcName) {
         if (r.funcs[funcName]) {
-            return 'my.funcs.' + funcName
+            return 'my.funcs.' + funcName;
         } else {
             return 'my.funcs.noFunc';
         }
@@ -173,7 +175,7 @@
                 }
             }
         }
-        return val == '' ? "''" : val;
+        return val === '' ? "''" : val;
     }
 
     /**
@@ -191,7 +193,7 @@
                 case '/':
                     if (i > start) {
                         key = word.substring(start, i);
-                        if (key.trim() != '') {
+                        if (key.trim() !== '') {
                             arr.push(key.trim());
                         }
                     }
@@ -207,7 +209,7 @@
                 case "'":
                     if (i > start) {
                         key = word.substring(start, i);
-                        if (key.trim() != '') {
+                        if (key.trim() !== '') {
                             arr.push(key.trim());
                         }
                     }
@@ -223,7 +225,7 @@
         }
         if (word.length > start) {
             key = word.substring(start, word.length);
-            if (key.trim() != '') {
+            if (key.trim() !== '') {
                 arr.push(key.trim());
             }
         }
@@ -247,7 +249,7 @@
 
     /**
      * 初始化语法结构
-     * @param id 渲染器的有效范围id
+     * @param items 渲染器的有效范围
      */
     r.init = function (items) {
         for (var i = 0; i < items.length; i++) {
@@ -261,7 +263,7 @@
     /**
      * 处理循环
      * @param item
-     * @param cache
+     * @param id
      */
     r.initRepeat = function (item, id) {
         var f = this.cache['xd-repeat-' + id];
@@ -269,9 +271,12 @@
             return f;
         }
         this.cache['xd-repeat-' + id] = item;
-        var funcBody = '(function (my,vo){var $scope=my.$scope;return ' + runTemplate(item.innerHTML) + ';})';
+        var funcBody = 'var $scope=my.$scope;return ' + runTemplate(item.innerHTML) + ';';
         try {
-            f = eval(funcBody);
+            /* jshint ignore:start */
+            f = new Function('my', 'vo', funcBody)
+            /* jshint ignore:end */
+            item.innerHTML='';
         } catch (e) {
             f = function () {
             };
@@ -279,6 +284,6 @@
         }
         this.cache['xdf-repeat-' + id] = f;
         return f;
-    }
+    };
 
 })(window.Render);

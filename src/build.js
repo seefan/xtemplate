@@ -1,5 +1,0 @@
-//@codekit-prepend "./render.js"
-//@codekit-prepend "./utils.js"
-//@codekit-prepend "./syntax.js"
-//@codekit-prepend "./funcs.js"
-//@codekit-prepend "./xtemplate.js"

@@ -1,13 +1,17 @@
-(function (d, r, x) {
+(function (d, w, x) {
     'use strict';
+    var r = w.Render;
     x.isInit = false;
     x.optAjax = false;
-    x.ready = function (callback) {
+    x.ready = function (callback, reload) {
         if (!x.isInit) {
             if (typeof callback === 'function') {
                 x.callback = callback;
             }
         } else {
+            if (reload) {
+                r.init(d.all);
+            }
             callback();
         }
     };
@@ -22,12 +26,11 @@
     };
     //参数
     x.query = function (key) {
-        if (!x.query_args) {
-            x.query_args = r.util.getUrlQuery();
+        if (!w.query_args) {
+            w.query_args = r.util.getUrlQuery();
         }
-        return x.query_args[key];
-    }
-
+        return w.query_args[key];
+    };
     /**
      * 加载数据
      * @param id
@@ -38,52 +41,54 @@
      */
     x.load = function (id, postUrl, param, backdata, callback, errorback) {
         var opt = {};
-        opt.id = id;
         opt.url = postUrl;
         opt.data = param;
         if (errorback) {
             opt.error = errorback;
-        }else if(x.error_callback){
-            opt.error=x.error_callback;
+        } else if (x.error_callback) {
+            opt.error = x.error_callback;
         }
-        
+
         opt.success = function (data) {
-            if(x.checkData){
-                if(!x.checkData(data)){
+            if (x.checkData) {
+                if (!x.checkData(data)) {
                     return;
                 }
             }
-            if(backdata){
+            if (backdata) {
                 data = backdata(data);
                 if (!data) {
                     return;
                 }
             }
             if (toString.apply(data) == "[object Array]") {
-                r.bindRepeatData(data, opt.id);
+                r.bindRepeatData(data, id);
             } else {
-                r.bindData(data);
+                if (id) {
+                    r.bindData(data, id);
+                } else {
+                    r.bindData(data);
+                }
             }
-            if(callback){
+            if (callback) {
                 callback(data);
             }
-        }
+        };
         if (x.isInit) {
             if (x.optAjax) {
                 x.optAjax.ajax(opt);
             } else {
                 $.ajax(opt);
             }
-
         }
-    }
+    };
     /**
      * 设置ajax类，默认为jquery
      * @param ajax
      */
     x.setAjax = function (ajax) {
         this.optAjax = ajax;
-    }
+    };
     if (d.readyState === 'complete') {
         x.init();
     } else {
@@ -93,4 +98,4 @@
             }
         };
     }
-})(document, window.Render, window.XTemplate = {});
+})(document, window, window.XTemplate = {});

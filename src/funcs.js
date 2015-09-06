@@ -11,7 +11,7 @@
             return defaultVal;
         }
         return val;
-    }
+    };
     /**
      * 按值选择返回内容
      * @param val
@@ -24,7 +24,7 @@
             }
         }
         return arguments[arguments.length - 1];
-    }
+    };
     /**
      * 格式化货币
      * @param val
@@ -32,7 +32,7 @@
      */
     f.format_currency = function (val) {
         return parseFloat(val);
-    }
+    };
 
 
     /**
@@ -68,7 +68,7 @@
                 fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (format_data_o[k]) : (("00" + format_data_o[k]).substr(("" + format_data_o[k]).length)));
         return fmt;
 
-    }
+    };
     /**
      * 数字保留小数位数
      * @param num
@@ -81,7 +81,7 @@
         } else {
             return '';
         }
-    }
+    };
     /**
      * 没有正确的函数处理时，用此函数处理
      * @param val
@@ -89,6 +89,6 @@
      */
     f.noFunc = function (val) {
         return val;
-    }
+    };
 
 })(window.Render.funcs);

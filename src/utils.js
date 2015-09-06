@@ -15,7 +15,7 @@
         } else {
             parentEl.insertBefore(newEl, targetEl.nextSibling);
         }
-    }
+    };
     /**
      * 取下一个节点
      * @param ele
@@ -27,33 +27,46 @@
         } else {
             return false;
         }
-    }
+    };
     /**
      * 给指定对象设置值
      * @param ele
      * @param value
      */
     u.setValue = function (ele, value) {
-        switch (ele.tagName) {
-            case 'INPUT':
-                ele.value = value;
-                break;
-            default:
-                ele.innerHTML = value;
-                break;
+        var tag = ele.tagName;
+        var id = ele.attributes['data-bind-to'];
+        if (id) {
+            ele.attributes[id.value] = value;
+        } else {
+            switch (tag) {
+                case 'IMG':
+                    ele.src = value;
+                    break;
+                case 'INPUT':
+                    ele.value = value;
+                    break;
+                default:
+                    ele.innerHTML = value;
+                    break;
+            }
         }
+    };
 
-    }
     /**
      * 过滤html
      * @param html
      * @returns {string}
      */
     u.html = function (html) {
-        html = html.replace(/</g, '&lt;');    //置换符号<
-        html = html.replace(/>/g, '&gt;');    //置换符号>
-        return html;
-    }
+        if (html && typeof(html) == 'string') {
+            html = html.replace(/</g, '&lt;');    //置换符号<
+            html = html.replace(/>/g, '&gt;');    //置换符号>
+            return html;
+        } else {
+            return this.getStringValue(html);
+        }
+    };
     /**
      * 取数组的key全集
      * @param key
@@ -75,7 +88,7 @@
             }
             return names;
         }
-    }
+    };
     /**
      * 是否有指定串开头
      * @param str
@@ -87,7 +100,7 @@
         } else {
             return false;
         }
-    }
+    };
     /**
      * 是否为数字
      * @param chars
@@ -95,8 +108,8 @@
      */
     u.isNumber = function (chars) {
         var re = /^(-?\d+)(\.\d+)?/;
-        return chars.match(re) != null;
-    }
+        return chars.match(re) !== null;
+    };
 
     /**
      * 取指定数组的值
@@ -109,10 +122,18 @@
         for (var i = 0; result && i < keys.length; i++) {
             result = result[keys[i]];
         }
-        if (result) {
-            return result;
-        } else {
+        return this.getStringValue(result);
+    };
+    /**
+     * 取默认显示的值
+     * @param val
+     * @returns {*}
+     */
+    u.getStringValue = function (val) {
+        if (typeof val == 'undefined') {
             return '';
+        } else {
+            return val.toString();
         }
     }
     /**
@@ -127,9 +148,9 @@
             query = query.substring(1);
             var pos = query.indexOf('#');
             if (pos != -1) {
-                query = query.substring(0, pos)
+                query = query.substring(0, pos);
             }
-            var pairs = query.split("&")
+            var pairs = query.split("&");
             for (var i = 0; i < pairs.length; i++) {
                 pos = pairs[i].indexOf('=');//查找name=value
                 if (pos == -1) {
@@ -148,5 +169,5 @@
             }
         }
         return args;
-    }
+    };
 })(window, window.Render.util);
