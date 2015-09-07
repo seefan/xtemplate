@@ -10,7 +10,7 @@
             }
         } else {
             if (reload) {
-                r.init(d.all);
+                r.init(document.all);
             }
             callback();
         }

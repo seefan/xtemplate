@@ -269,11 +269,11 @@
      * @param id
      */
     r.initRepeat = function (item, id) {
-        var f = this.cache['xd-repeat-' + id];
-        if (f) {
-            return f;
-        }
         this.cache['xd-repeat-' + id] = item;
+        var f = this.cache['xdf-repeat-' + id];
+        if (f) {
+            return true;
+        }
         var funcBody = 'var $scope=my.$scope;return ' + runTemplate(item.innerHTML) + ';';
         try {
             /* jshint ignore:start */
