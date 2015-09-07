@@ -6,18 +6,21 @@
      * @param cache
      */
     function initBind(item, cache) {
-        var id = item.attributes['data-bind-func'];
+        var id = item.attributes['data-bind-to'];
         if (id && item.attributes.name) {
             var name = item.attributes.name.value;
-
-            var funcBody = 'var $scope=my.$scope;return ' + runTemplate('{' + name + '|' + id.value + '}') + ';';
-            try {
-                /* jshint ignore:start */
-                cache['xdf-bind-' + name] = new Function('my', 'vo', funcBody);
-                /* jshint ignore:end */
-                return true;
-            } catch (e) {
-                console.log('解析bind模板' + id.value + '出错，' + e.message);
+            var tpl = r.util.trim(item[id.value]);
+            if (tpl.length > 0) {
+                var funcBody = 'var $scope=my.$scope;return ' + runTemplate(item[id.value]) + ';';
+                item[id.value] = '';
+                try {
+                    /* jshint ignore:start */
+                    cache['xdf-bind-' + name] = new Function('my', 'vo', funcBody);
+                    /* jshint ignore:end */
+                    return true;
+                } catch (e) {
+                    console.log('解析bind模板' + id.value + '出错，' + e.message);
+                }
             }
         }
         return false;
@@ -276,7 +279,7 @@
             /* jshint ignore:start */
             f = new Function('my', 'vo', funcBody)
             /* jshint ignore:end */
-            item.innerHTML='';
+            item.innerHTML = '';
         } catch (e) {
             f = function () {
             };

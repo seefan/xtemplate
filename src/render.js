@@ -35,22 +35,21 @@
                 key = name + '.' + key;
                 item = this.$scope;
             }
-
             var items = document.getElementsByName(key);
             for (i = 0; i < items.length; i++) {
                 var xf = this.cache['xdf-bind-' + key], value;
                 if (xf) {
                     value = xf(this, item);
                 } else {
-                    value = this.util.getValue(key, item);
+                    //如果简单的绑定innerHTML,就不再转为纯文本了
+                    var id = items[i].attributes['data-bind-to'];
+                    if (id && id.value == 'innerHTML') {
+                        value = this.util.getValue(key, item);
+                    } else {
+                        value = this.util.html(this.util.getValue(key, item));
+                    }
                 }
-                var isHtml = items[i].attributes['data-bind-html'];
-                if (!(isHtml && isHtml.value === 'true')) {
-                    value = this.util.html(value);
-                }
-
                 this.util.setValue(items[i], value);
-                items[i].style.display = '';
             }
         }
     };

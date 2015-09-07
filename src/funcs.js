@@ -90,5 +90,18 @@
     f.noFunc = function (val) {
         return val;
     };
-
+    /**
+     * 重复num次val
+     *
+     * @param num
+     * @param val
+     * @returns {string}
+     */
+    f.repeat = function (num, val) {
+        var result = '';
+        for (var i = 0; i < num; i++) {
+            result += val;
+        }
+        return result;
+    };
 })(window.Render.funcs);

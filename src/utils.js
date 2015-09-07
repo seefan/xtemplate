@@ -29,6 +29,17 @@
         }
     };
     /**
+     * 清理代码
+     * @param val
+     */
+    u.trim = function (val) {
+        if (typeof(val) == 'string') {
+            return val.replace(/\r/g, '').replace(/\n/g, '').replace('　', '').trim();
+        } else {
+            return u.trim(u.getStringValue(val));
+        }
+    }
+    /**
      * 给指定对象设置值
      * @param ele
      * @param value
@@ -37,7 +48,7 @@
         var tag = ele.tagName;
         var id = ele.attributes['data-bind-to'];
         if (id) {
-            ele.attributes[id.value] = value;
+            ele[id.value] = value;
         } else {
             switch (tag) {
                 case 'IMG':
@@ -130,12 +141,12 @@
      * @returns {*}
      */
     u.getStringValue = function (val) {
-        if (typeof val == 'undefined') {
+        if (val == null || typeof val == 'undefined') {
             return '';
         } else {
             return val.toString();
         }
-    }
+    };
     /**
      * 取url的参数
      * @returns {{}}
