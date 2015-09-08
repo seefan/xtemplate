@@ -50,28 +50,31 @@
         }
 
         opt.success = function (data) {
+            var ok = true;
             if (x.checkData) {
                 if (!x.checkData(data)) {
-                    return;
+                    ok = false;
                 }
             }
-            if (backdata) {
+            if (ok && backdata) {
                 data = backdata(data);
                 if (!data) {
-                    return;
+                    ok = false;
                 }
             }
-            if (toString.apply(data) == "[object Array]") {
-                r.bindRepeatData(data, id);
-            } else {
-                if (id) {
-                    r.bindData(data, id);
+            if (ok) {
+                if (toString.apply(data) == "[object Array]") {
+                    r.bindRepeatData(data, id);
                 } else {
-                    r.bindData(data);
+                    if (id) {
+                        r.bindData(data, id);
+                    } else {
+                        r.bindData(data);
+                    }
                 }
             }
             if (callback) {
-                callback(data);
+                callback(ok);
             }
         };
         if (x.isInit) {
