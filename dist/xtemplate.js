@@ -142,7 +142,7 @@
         } else {
             return u.trim(u.getStringValue(val));
         }
-    }
+    };
     /**
      * 给指定对象设置值
      * @param ele
@@ -245,7 +245,7 @@
      * @returns {*}
      */
     u.getStringValue = function (val) {
-        if (val == null || typeof val == 'undefined') {
+        if (val === null || typeof val == 'undefined') {
             return '';
         } else {
             return val.toString();
@@ -556,9 +556,11 @@
      * @param id
      */
     r.initRepeat = function (item, id) {
-        this.cache['xd-repeat-' + id] = item;
         var html = item.innerHTML;
-        item.innerHTML = '';
+        if (this.cache['xd-repeat-' + id] != item) {
+            this.cache['xd-repeat-' + id] = item;
+            item.innerHTML = '';
+        }
         var f = this.cache['xdf-repeat-' + id];
         if (f) {
             return true;

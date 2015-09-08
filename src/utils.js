@@ -38,7 +38,7 @@
         } else {
             return u.trim(u.getStringValue(val));
         }
-    }
+    };
     /**
      * 给指定对象设置值
      * @param ele
@@ -141,7 +141,7 @@
      * @returns {*}
      */
     u.getStringValue = function (val) {
-        if (val == null || typeof val == 'undefined') {
+        if (val === null || typeof val == 'undefined') {
             return '';
         } else {
             return val.toString();
