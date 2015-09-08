@@ -270,16 +270,17 @@
      */
     r.initRepeat = function (item, id) {
         this.cache['xd-repeat-' + id] = item;
+        var html = item.innerHTML;
+        item.innerHTML = '';
         var f = this.cache['xdf-repeat-' + id];
         if (f) {
             return true;
         }
-        var funcBody = 'var $scope=my.$scope;return ' + runTemplate(item.innerHTML) + ';';
+        var funcBody = 'var $scope=my.$scope;return ' + runTemplate(html) + ';';
         try {
             /* jshint ignore:start */
             f = new Function('my', 'vo', funcBody)
             /* jshint ignore:end */
-            item.innerHTML = '';
         } catch (e) {
             f = function () {
             };
