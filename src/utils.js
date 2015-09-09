@@ -148,6 +148,24 @@
         }
     };
     /**
+     * 转向一个url，支持多个参数，第一个参数为url地址，后续为参数
+     */
+    u.gotoUrl = function () {
+        var url = '', i = 0;
+        if (arguments.length > 0) {
+            url = arguments[i];
+        }
+        if (url.indexOf('?') != -1) {
+            url += '&';
+        } else {
+            url += '?';
+        }
+        for (i = 1; i < arguments.length - 1; i += 2) {
+            url += arguments[i] + '=' + encodeURIComponent(arguments[i + 1]) + '&';
+        }
+        w.location.href = url;
+    };
+    /**
      * 取url的参数
      * @returns {{}}
      */

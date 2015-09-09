@@ -31,6 +31,10 @@
         }
         return w.query_args[key];
     };
+    //绑定工具
+    x.util = r.util;
+    //绑定数据
+    x.$scope=r.$scope;
     /**
      * 加载数据
      * @param id
