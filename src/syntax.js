@@ -11,7 +11,7 @@
             var name = item.attributes.name.value;
             var tpl = r.util.trim(item[id.value]);
             if (tpl.length > 0) {
-                var funcBody = 'var $scope=my.$scope;return ' + runTemplate(item[id.value]) + ';';
+                var funcBody = 'return ' + runTemplate(item[id.value]) + ';';
                 item[id.value] = '';
                 try {
                     /* jshint ignore:start */
@@ -278,7 +278,7 @@
         if (f) {
             return true;
         }
-        var funcBody = 'var $scope=my.$scope;return ' + runTemplate(html) + ';';
+        var funcBody = 'return ' + runTemplate(html) + ';';
         try {
             /* jshint ignore:start */
             f = new Function('my', 'vo', funcBody)

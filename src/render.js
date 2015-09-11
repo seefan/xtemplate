@@ -1,7 +1,7 @@
-(function (document, r) {
+(function (w,doc, r) {
     'use strict';
     //全局变量
-    r.$scope = {};
+    w.$scope = {};
     //可绑定的key列表
     r.$bindKey = {};
     //缓存
@@ -19,7 +19,7 @@
         if (!name) {
             name = 'data';
         }
-        this.$scope[name] = data;
+        w.$scope[name] = data;
         this.$bindKey[name] = [];
         var i = 0;
         for (var tkey in data) {
@@ -30,12 +30,12 @@
         }
 
         for (var j = 0; j < this.$bindKey[name].length; j++) {
-            var key = this.$bindKey[name][j], item = this.$scope[name];
+            var key = this.$bindKey[name][j], item = w.$scope[name];
             if (name != 'data') {
                 key = name + '.' + key;
-                item = this.$scope;
+                item = w.$scope;
             }
-            var items = document.getElementsByName(key);
+            var items = doc.getElementsByName(key);
             for (i = 0; i < items.length; i++) {
                 var xf = this.cache['xdf-bind-' + key], value;
                 if (xf) {
@@ -59,9 +59,9 @@
      * @param value
      */
     r.bindName = function (name, value) {
-        var items = document.getElementsByName(name);
+        var items = doc.getElementsByName(name);
         if (items) {
-            //this.$scope[name] = value;
+            //w.$scope[name] = value;
             for (var i = 0; i < items.length; i++) {
                 this.util.setValue(items[i], value);
                 items[i].style.display = '';
@@ -102,4 +102,4 @@
             this.funcs[name] = func;
         }
     };
-})(document, window.Render = {});
+})(window, document, window.Render = {});
