@@ -14,7 +14,7 @@
                 var f = cache['xdf-bind-' + name];
                 if (f) {
                     return true;
-                }else{
+                } else {
                     item[id.value] = '';
                 }
                 var funcBody = 'return ' + runTemplate(tpl) + ';';
@@ -134,7 +134,9 @@
      * @returns {string}
      */
     function runFunc(funcName) {
-        if (r.funcs[funcName]) {
+        if (funcName && funcName.length > 1 && funcName[0] == '$') {
+            return funcName.substring(1);
+        } else if (r.funcs[funcName]) {
             return 'my.funcs.' + funcName;
         } else {
             return 'my.funcs.noFunc';
