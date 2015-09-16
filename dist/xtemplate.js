@@ -717,7 +717,10 @@
             if (reload) {
                 r.init(document.all);
             }
-            callback();
+            if (typeof callback === 'function') {
+                x.callback = callback;
+                x.callback();
+            }
         }
     };
     x.init = function () {
@@ -750,6 +753,7 @@
         var opt = {};
         opt.url = postUrl;
         opt.data = param;
+        opt.callback=callback;
         if (errorback) {
             opt.error = errorback;
         } else if (x.error_callback) {
@@ -780,8 +784,8 @@
                     }
                 }
             }
-            if (callback) {
-                callback(ok);
+            if (opt.callback) {
+                opt.callback(ok);
             }
         };
         if (x.isInit) {
