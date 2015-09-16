@@ -11,8 +11,13 @@
             var name = item.attributes.name.value;
             var tpl = r.util.trim(item[id.value]);
             if (tpl.length > 0) {
-                var funcBody = 'return ' + runTemplate(item[id.value]) + ';';
-                item[id.value] = '';
+                var f = cache['xdf-bind-' + name];
+                if (f) {
+                    return true;
+                }else{
+                    item[id.value] = '';
+                }
+                var funcBody = 'return ' + runTemplate(tpl) + ';';
                 try {
                     /* jshint ignore:start */
                     cache['xdf-bind-' + name] = new Function('my', 'vo', funcBody);
