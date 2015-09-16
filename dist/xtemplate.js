@@ -710,6 +710,38 @@
         }
         return result;
     };
+    /**
+     * 从左侧截断字串
+     * @param str
+     * @param len 截断后的字串长度，一个汉字按2个字符计算
+     * @param dot 可选，截断后补充的串，示例:"..."
+     * @returns {string}
+     */
+    f.left = function (str, len, dot) {
+        var newLength = 0;
+        var newStr = "";
+        var chineseRegex = /[^\x00-\xff]/g;
+        var singleChar = "";
+        var dotLen = 0;
+        if (dot) {
+            dotLen = dot.length;
+        }
+        var strLength = str.replace(chineseRegex, "**").length;
+        for (var i = 0; i < strLength; i++) {
+            singleChar = str.charAt(i).toString();
+            if (singleChar.match(chineseRegex) !== null) {
+                newLength += 2;
+            } else {
+                newLength++;
+            }
+            if (newLength + dotLen > len) {
+                newStr += dot;
+                break;
+            }
+            newStr += singleChar;
+        }
+        return newStr;
+    };
 })(window.Render.funcs);;(function (d, w, x) {
     'use strict';
     var r = w.Render;
