@@ -129,7 +129,9 @@
                 newLength++;
             }
             if (newLength + dotLen > len) {
-                newStr += dot;
+                if(dotLen>0) {
+                    newStr += dot;
+                }
                 break;
             }
             newStr += singleChar;
