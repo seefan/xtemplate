@@ -753,7 +753,7 @@
         var opt = {};
         opt.url = postUrl;
         opt.data = param;
-        opt.callback=callback;
+
         if (errorback) {
             opt.error = errorback;
         } else if (x.error_callback) {
@@ -784,8 +784,8 @@
                     }
                 }
             }
-            if (opt.callback) {
-                opt.callback(ok);
+            if (callback) {
+                callback(ok);
             }
         };
         if (x.isInit) {
