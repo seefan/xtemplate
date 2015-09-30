@@ -28,11 +28,14 @@
         }
     };
     //参数
-    x.query = function (key) {
+    x.query = function (key,defaultValue) {
         if (!w.query_args) {
             w.query_args = r.util.getUrlQuery();
         }
-        return w.query_args[key];
+        var tmp= w.query_args[key];
+        if(!tmp){
+            return defaultValue;
+        }
     };
     //绑定工具
     x.util = r.util;

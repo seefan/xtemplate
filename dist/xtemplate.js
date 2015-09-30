@@ -1,4 +1,26 @@
-(function (w,doc, r) {
+/**
+ * XTemplate的运行主体，使用对外使用的变量有$scope，当使用bindData时，数量会按名字注入这个变量。
+ *
+ * 目前支持两种形式的绑定，单变量绑定和数组。
+ * 单变量绑定是以html中name名字为绑定对象，只要名字和绑定的变量同名，即会自动赋值。
+ *
+ * 例如：<p name='title'></p>
+ * 这时如果有一个变量为如下结构{title:'hello world'}，那么，这个name为title的p标签就会显示hello world。
+ * 最终会生成
+ * <p name='title'>hello world</p>
+ * 数组绑定是首先取到一个模板，再把一个数组的内容循环，按模板格式化后返回多行html。
+ * 例如：<ul data-repeat-name='listdata'>
+ *          <li>{title}</li>
+ *      </ul>
+ * 这里定义了一个名为listdata的模板，ul的内部html将成为可循环的模板，即<li>{title}</li>为待循环的内容
+ * 我们绑定以下变量[{title:'hello 0'},{title:'hello 1'}]
+ * 最终会生成
+ * <ul data-repeat-name='listdata'>
+ *          <li>hello 0</li>
+ *          <li>hello 1</li>
+ *      </ul>
+ */
+(function (w, doc, r) {
     'use strict';
     //全局变量
     w.$scope = {};
@@ -93,9 +115,11 @@
 
 
     /**
+     * 如果需要自行扩展Render的函数，请使用本函数。
+     * 这些函数可以在html的模板中使用
      * 增加自定义函数
-     * @param func
-     * @param name
+     * @param func 函数体
+     * @param name 函数的名称
      */
     r.addFunc = function (func, name) {
         if (func && name) {
@@ -303,8 +327,12 @@
         }
         return args;
     };
-})(window, window.Render.util);;(function (r) {
-
+})(window, window.Render.util);;/**
+ * XTemplate 的语法定义
+ *
+ *
+ */
+(function (r) {
     /**
      * 处理绑定函数
      * @param item
@@ -439,7 +467,7 @@
      * @returns {string}
      */
     function runFunc(funcName) {
-        if (funcName && funcName.length > 1 && funcName[0] == '$') {
+        if (funcName && funcName.length > 1 && funcName[0] == '#') {
             return funcName.substring(1);
         } else if (r.funcs[funcName]) {
             return 'my.funcs.' + funcName;
@@ -604,7 +632,12 @@
         return f;
     };
 
-})(window.Render);;(function (f) {
+})(window.Render);;/**
+ * XTemplate 所有的扩展函数集合，用于处理html中常见的格式转换，默认值等处理。
+ *
+ * 如果需要自行扩展，请使用window.Render的addFunc函数
+ */
+(function (f) {
     'use strict';
     /**
      * 默认值
@@ -774,11 +807,14 @@
         }
     };
     //参数
-    x.query = function (key) {
+    x.query = function (key,defaultValue) {
         if (!w.query_args) {
             w.query_args = r.util.getUrlQuery();
         }
-        return w.query_args[key];
+        var tmp= w.query_args[key];
+        if(!tmp){
+            return defaultValue;
+        }
     };
     //绑定工具
     x.util = r.util;

@@ -1,5 +1,9 @@
+/**
+ * XTemplate 的语法定义
+ *
+ *
+ */
 (function (r) {
-
     /**
      * 处理绑定函数
      * @param item
@@ -134,7 +138,7 @@
      * @returns {string}
      */
     function runFunc(funcName) {
-        if (funcName && funcName.length > 1 && funcName[0] == '$') {
+        if (funcName && funcName.length > 1 && funcName[0] == '#') {
             return funcName.substring(1);
         } else if (r.funcs[funcName]) {
             return 'my.funcs.' + funcName;
