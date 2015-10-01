@@ -5,39 +5,6 @@
  */
 (function (r) {
     /**
-     * 返回绑定函数
-     * @param name
-     * @param value
-     * @returns {*}
-     */
-    r.funcBind = function (name, value) {
-        var tpl = r.util.trim(decodeURIComponent(value));
-        if (tpl.length > 0) {
-            var funcBody = 'return ' + runTemplate(tpl) + ';';
-            try {
-                /* jshint ignore:start */
-                return new Function('my', 'vo', funcBody);
-                /* jshint ignore:end */
-            } catch (e) {
-                console.log('解析bind模板' + name + '出错，' + e.message);
-            }
-        }
-        return false;
-    };
-
-    /**
-     * 处理循环
-     * @param item
-     */
-    function initRepeat(item) {
-        var id = item.attributes['data-repeat-name'];
-        if (id) {
-            r.initRepeat(item, id.value);
-        }
-    }
-
-
-    /**
      * 将数据与模块绑定
      * @param tmpl
      * @param data
@@ -253,43 +220,85 @@
         return 0;
     }
 
+    //缓存
+    r.syntax.cache = {};
+    /**
+     * 返回绑定函数
+     * @param name
+     * @param value
+     * @returns {*}
+     */
+    r.syntax.buildFunc = function (name, html) {
+        var tpl = r.util.trim(decodeURIComponent(html));
+        if (tpl.length > 0) {
+            var funcBody = 'return ' + runTemplate(tpl) + ';';
+            try {
+                /* jshint ignore:start */
+                return new Function('my', 'vo', funcBody);
+                /* jshint ignore:end */
+            } catch (e) {
+                console.log('解析bind模板' + name + '出错，' + e.message);
+            }
+        }
+        return false;
+    };
     /**
      * 初始化语法结构
      * @param items 渲染器的有效范围
      */
     r.init = function (items) {
         for (var i = 0; i < items.length; i++) {
-            initRepeat(items[i]);
+            var item = items[i];
+            var id = item.attributes['data-repeat-name'];
+            if (id) {
+                r.syntax.initRepeat(item, id.value);
+            }
         }
     };
-
+    /**
+     * 返回有缓存的方法
+     * @param id
+     * @returns {*}
+     */
+    r.syntax.cacheRepeatFunc = function (id) {
+        var f = this.syntax.cache['xdf-repeat-' + id];
+        if (f) {
+            return f;
+        } else {
+            return false;
+        }
+    };
     /**
      * 处理循环
      * @param item
      * @param id
      */
-    r.initRepeat = function (item, id) {
-        var html = decodeURIComponent(item.innerHTML);
-        if (this.cache['xd-repeat-' + id] != item) {
-            this.cache['xd-repeat-' + id] = item;
+    r.syntax.initRepeat = function (item, id) {
+        var html = item.innerHTML;
+        if (this.syntax.cache['xd-repeat-' + id] != item) {
+            this.syntax.cache['xd-repeat-' + id] = item;
             item.innerHTML = '';
         }
-        var f = this.cache['xdf-repeat-' + id];
+        var f = this.syntax.cache['xdf-repeat-' + id];
         if (f) {
-            return true;
+            return;
         }
-        var funcBody = 'return ' + runTemplate(html) + ';';
-        try {
-            /* jshint ignore:start */
-            f = new Function('my', 'vo', funcBody)
-            /* jshint ignore:end */
-        } catch (e) {
+        f = r.syntax.buildFunc(id, html);
+        if (!f) {
             f = function () {
             };
-            console.log('解析repeat模板' + id + '出错，' + e.message);
         }
-        this.cache['xdf-repeat-' + id] = f;
-        return f;
+        this.syntax.cache['xdf-repeat-' + id] = f;
     };
-
+    /**
+     * 给缓存的对象设置值
+     * @param id
+     * @param html
+     */
+    r.syntax.setRepeatHtml = function (id, html) {
+        var item = this.syntax.cache['xd-repeat-' + id];
+        if (item) {
+            item.innerHTML = html;
+        }
+    };
 })(window.Render);

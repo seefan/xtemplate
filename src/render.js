@@ -52,12 +52,15 @@
     w.$scope = {};
     //可绑定的key列表
     r.$bindKey = {};
-    //缓存
-    r.cache = {};
+
+    //语法处理
+    r.syntax = {};
     //内部函数
     r.funcs = {};
     //工具
     r.util = {};
+
+
     /**
      * 绑定数据值
      * @param id 缓存范围的id
@@ -89,7 +92,7 @@
                 value = '';
                 var id = items[i].attributes['data-bind-to'];
                 if (id) {
-                    var xf = r.funcBind(key, items[i][id.value]);
+                    var xf = r.syntax.buildFunc(key, items[i][id.value]);
                     if (xf) {
                         value = xf(this, item);
                     } else {
@@ -140,21 +143,17 @@
      * @param data 要绑定的数据
      */
     r.bindRepeatData = function (data, id) {
-        var item = this.cache['xd-repeat-' + id];
-        if (!item) {
-            return;
-        }
         if (!data || data.length < 1) {
             return;
         }
-        var html = '';
-        for (var i = 0; i < data.length; i++) {
-            var func = this.cache['xdf-repeat-' + id];
-            if (func) {
+        var func = this.syntax.cacheRepeatFunc(id);
+        if (func) {
+            var html = '';
+            for (var i = 0; i < data.length; i++) {
                 html += func(this, data[i]);
             }
+            r.syntax.setRepeatHtml(id, html);
         }
-        item.innerHTML = html;
     };
 
 
@@ -170,4 +169,5 @@
             this.funcs[name] = func;
         }
     };
-})(window, document, window.Render = {});
+})
+(window, document, window.Render = {});
