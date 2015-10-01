@@ -19,6 +19,32 @@
  *          <li>hello 0</li>
  *          <li>hello 1</li>
  *      </ul>
+ *
+ * 特殊语法：
+ * #号的使用
+ * 在模板中使用，例如{#title}，输出title的值，以没有#的区别，这里不会把html进行编码，会输出原始的html。
+ * 在函数名中使用，如果在函数名前加#，则指定这个函数为全局函数，这时这个函数必须是已经定义的好的全局函数或是javascript的内部函数。
+ *
+ * data-bind-src，主要是给img标签用，作用是将src的值组装好后再绑定，这里避免无效的src。
+ * 例如：<img src='/{imgsrc}/abc.jpg'>这个src是无效的，但浏览器会加载这个错误的地址引起一次无效的http请求。
+ * 正确的做法是<img data-bind-src='/imgsrc/abc.jsp'>或<img data-bind-src='/imgsrc/abc.jsp' src='默认图'>
+ *
+ * data-bind-to，是指定绑定的属性名称，同时可以使用模板。
+ * 例如：<a name='product_id' data-bind-to='href' href='/news/{product_type}/{product_id}/detail.html'>click</a>
+ * 在使用bindData时，会将href的内容格式化后重新替换href，以生成一个新的href。
+ * 特殊用法，$scope的使用
+ * <a name='product_id' data-bind-to='href' href='/news/{$scope.type}/{product_id}/detail.html'>click</a>
+ * 如果$scope中有type属性，该值会被带入。
+ * 如果其它模板中有与{$scope.type}冲突的，以至于我们取不到正确的模板，那么在前面加一个#来解决
+ * {#$scope.type}
+ *
+ * 函数的使用
+ * 目前已经支持了default,case等多个函数。
+ * 输出html转义值: {title}
+ * 直接输出原始值: {!title}
+ * 模板内使用全局值: {#title}，使用$scope{#$scope.title}，输出$scope的原始值{#!$scope.title}
+ * 使用函数处理: {title|default,'空标签'}
+ * 多个函数可连续使用: {title|default,'空标签'|left,10}，title输出值默认为空标签，最多输出10个字符
  */
 (function (w, doc, r) {
     'use strict';
@@ -58,19 +84,37 @@
                 item = w.$scope;
             }
             var items = doc.getElementsByName(key);
+            var value;
             for (i = 0; i < items.length; i++) {
-                var xf = this.cache['xdf-bind-' + key], value;
-                if (xf) {
-                    value = xf(this, item);
+                value = '';
+                var id = items[i].attributes['data-bind-to'];
+                if (id) {
+                    var xf = r.funcBind(key, items[i][id.value]);
+                    if (xf) {
+                        value = xf(this, item);
+                    } else {
+                        //如果简单的绑定innerHTML,就不再转为纯文本了
+                        if (id.value === 'innerHTML') {
+                            value = this.util.getValue(key, item);
+                        } else {
+                            value = this.util.html(this.util.getValue(key, item));
+                        }
+                    }
                 } else {
-                    //如果简单的绑定innerHTML,就不再转为纯文本了
-                    var id = items[i].attributes['data-bind-to'];
-                    if (id && id.value == 'innerHTML') {
-                        value = this.util.getValue(key, item);
+                    //单独处理一下img的data-bind-src
+                    id = items[i].attributes['data-bind-src'];
+                    if (id) {
+                        var xff = r.funcBind(key, id.value);
+                        if (xff) {
+                            value = xff(this, item);
+                        } else {
+                            value = this.util.getValue(key, item);//不需要html转义
+                        }
                     } else {
                         value = this.util.html(this.util.getValue(key, item));
                     }
                 }
+
                 this.util.setValue(items[i], value);
             }
         }
@@ -334,35 +378,25 @@
  */
 (function (r) {
     /**
-     * 处理绑定函数
-     * @param item
-     * @param cache
+     * 返回绑定函数
+     * @param name
+     * @param value
+     * @returns {*}
      */
-    function initBind(item, cache) {
-        var id = item.attributes['data-bind-to'];
-        if (id && item.attributes.name) {
-            var name = item.attributes.name.value;
-            var tpl = r.util.trim(item[id.value]);
-            if (tpl.length > 0) {
-                var f = cache['xdf-bind-' + name];
-                if (f) {
-                    return true;
-                } else {
-                    item[id.value] = '';
-                }
-                var funcBody = 'return ' + runTemplate(tpl) + ';';
-                try {
-                    /* jshint ignore:start */
-                    cache['xdf-bind-' + name] = new Function('my', 'vo', funcBody);
-                    /* jshint ignore:end */
-                    return true;
-                } catch (e) {
-                    console.log('解析bind模板' + id.value + '出错，' + e.message);
-                }
+    r.funcBind = function (name, value) {
+        var tpl = r.util.trim(decodeURIComponent(value));
+        if (tpl.length > 0) {
+            var funcBody = 'return ' + runTemplate(tpl) + ';';
+            try {
+                /* jshint ignore:start */
+                return new Function('my', 'vo', funcBody);
+                /* jshint ignore:end */
+            } catch (e) {
+                console.log('解析bind模板' + name + '出错，' + e.message);
             }
         }
         return false;
-    }
+    };
 
     /**
      * 处理循环
@@ -425,7 +459,7 @@
      */
     function runKeyword(funcString) {
         var filterHtml = true;
-        if (funcString[0] == '#') {
+        if (funcString[0] == '!') {
             funcString = funcString.substring(1);
             filterHtml = false;
         }
@@ -497,7 +531,7 @@
                     case '/':
                     case '(':
                     case ')':
-                    case '$':
+                    case '#':
                     case "'":
                     case '"':
                     case '0':
@@ -596,10 +630,7 @@
      */
     r.init = function (items) {
         for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            if (!initBind(item, r.cache)) {
-                initRepeat(item);
-            }
+            initRepeat(items[i]);
         }
     };
 
@@ -609,7 +640,7 @@
      * @param id
      */
     r.initRepeat = function (item, id) {
-        var html = item.innerHTML;
+        var html = decodeURIComponent(item.innerHTML);
         if (this.cache['xd-repeat-' + id] != item) {
             this.cache['xd-repeat-' + id] = item;
             item.innerHTML = '';
@@ -637,7 +668,7 @@
  *
  * 如果需要自行扩展，请使用window.Render的addFunc函数
  */
-(function (f) {
+(function (f, util) {
     'use strict';
     /**
      * 默认值
@@ -744,6 +775,14 @@
         return result;
     };
     /**
+     * 过滤html字符
+     * @param html
+     * @returns {string|*}
+     */
+    f.filter_html = function (html) {
+        return util.html(html);
+    };
+    /**
      * 从左侧截断字串
      * @param str
      * @param len 截断后的字串长度，一个汉字按2个字符计算
@@ -768,7 +807,7 @@
                 newLength++;
             }
             if (newLength + dotLen > len) {
-                if(dotLen>0) {
+                if (dotLen > 0) {
                     newStr += dot;
                 }
                 break;
@@ -777,7 +816,7 @@
         }
         return newStr;
     };
-})(window.Render.funcs);;(function (d, w, x) {
+})(window.Render.funcs, window.Render.util);;(function (d, w, x) {
     'use strict';
     var r = w.Render;
     x.isInit = false;

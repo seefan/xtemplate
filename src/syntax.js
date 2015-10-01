@@ -5,35 +5,25 @@
  */
 (function (r) {
     /**
-     * 处理绑定函数
-     * @param item
-     * @param cache
+     * 返回绑定函数
+     * @param name
+     * @param value
+     * @returns {*}
      */
-    function initBind(item, cache) {
-        var id = item.attributes['data-bind-to'];
-        if (id && item.attributes.name) {
-            var name = item.attributes.name.value;
-            var tpl = r.util.trim(item[id.value]);
-            if (tpl.length > 0) {
-                var f = cache['xdf-bind-' + name];
-                if (f) {
-                    return true;
-                } else {
-                    item[id.value] = '';
-                }
-                var funcBody = 'return ' + runTemplate(tpl) + ';';
-                try {
-                    /* jshint ignore:start */
-                    cache['xdf-bind-' + name] = new Function('my', 'vo', funcBody);
-                    /* jshint ignore:end */
-                    return true;
-                } catch (e) {
-                    console.log('解析bind模板' + id.value + '出错，' + e.message);
-                }
+    r.funcBind = function (name, value) {
+        var tpl = r.util.trim(decodeURIComponent(value));
+        if (tpl.length > 0) {
+            var funcBody = 'return ' + runTemplate(tpl) + ';';
+            try {
+                /* jshint ignore:start */
+                return new Function('my', 'vo', funcBody);
+                /* jshint ignore:end */
+            } catch (e) {
+                console.log('解析bind模板' + name + '出错，' + e.message);
             }
         }
         return false;
-    }
+    };
 
     /**
      * 处理循环
@@ -96,7 +86,7 @@
      */
     function runKeyword(funcString) {
         var filterHtml = true;
-        if (funcString[0] == '#') {
+        if (funcString[0] == '!') {
             funcString = funcString.substring(1);
             filterHtml = false;
         }
@@ -168,7 +158,7 @@
                     case '/':
                     case '(':
                     case ')':
-                    case '$':
+                    case '#':
                     case "'":
                     case '"':
                     case '0':
@@ -267,10 +257,7 @@
      */
     r.init = function (items) {
         for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            if (!initBind(item, r.cache)) {
-                initRepeat(item);
-            }
+            initRepeat(items[i]);
         }
     };
 
@@ -280,7 +267,7 @@
      * @param id
      */
     r.initRepeat = function (item, id) {
-        var html = item.innerHTML;
+        var html = decodeURIComponent(item.innerHTML);
         if (this.cache['xd-repeat-' + id] != item) {
             this.cache['xd-repeat-' + id] = item;
             item.innerHTML = '';

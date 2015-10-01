@@ -40,8 +40,9 @@
  *
  * 函数的使用
  * 目前已经支持了default,case等多个函数。
- * 直接输出值: {title}
- * 直接输出html: {#title}
+ * 输出html转义值: {title}
+ * 直接输出原始值: {!title}
+ * 模板内使用全局值: {#title}，使用$scope{#$scope.title}，输出$scope的原始值{#!$scope.title}
  * 使用函数处理: {title|default,'空标签'}
  * 多个函数可连续使用: {title|default,'空标签'|left,10}，title输出值默认为空标签，最多输出10个字符
  */
@@ -83,19 +84,37 @@
                 item = w.$scope;
             }
             var items = doc.getElementsByName(key);
+            var value;
             for (i = 0; i < items.length; i++) {
-                var xf = this.cache['xdf-bind-' + key], value;
-                if (xf) {
-                    value = xf(this, item);
+                value = '';
+                var id = items[i].attributes['data-bind-to'];
+                if (id) {
+                    var xf = r.funcBind(key, items[i][id.value]);
+                    if (xf) {
+                        value = xf(this, item);
+                    } else {
+                        //如果简单的绑定innerHTML,就不再转为纯文本了
+                        if (id.value === 'innerHTML') {
+                            value = this.util.getValue(key, item);
+                        } else {
+                            value = this.util.html(this.util.getValue(key, item));
+                        }
+                    }
                 } else {
-                    //如果简单的绑定innerHTML,就不再转为纯文本了
-                    var id = items[i].attributes['data-bind-to'];
-                    if (id && id.value == 'innerHTML') {
-                        value = this.util.getValue(key, item);
+                    //单独处理一下img的data-bind-src
+                    id = items[i].attributes['data-bind-src'];
+                    if (id) {
+                        var xff = r.funcBind(key, id.value);
+                        if (xff) {
+                            value = xff(this, item);
+                        } else {
+                            value = this.util.getValue(key, item);//不需要html转义
+                        }
                     } else {
                         value = this.util.html(this.util.getValue(key, item));
                     }
                 }
+
                 this.util.setValue(items[i], value);
             }
         }

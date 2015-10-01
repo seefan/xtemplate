@@ -3,7 +3,7 @@
  *
  * 如果需要自行扩展，请使用window.Render的addFunc函数
  */
-(function (f) {
+(function (f, util) {
     'use strict';
     /**
      * 默认值
@@ -110,6 +110,14 @@
         return result;
     };
     /**
+     * 过滤html字符
+     * @param html
+     * @returns {string|*}
+     */
+    f.filter_html = function (html) {
+        return util.html(html);
+    };
+    /**
      * 从左侧截断字串
      * @param str
      * @param len 截断后的字串长度，一个汉字按2个字符计算
@@ -134,7 +142,7 @@
                 newLength++;
             }
             if (newLength + dotLen > len) {
-                if(dotLen>0) {
+                if (dotLen > 0) {
                     newStr += dot;
                 }
                 break;
@@ -143,4 +151,4 @@
         }
         return newStr;
     };
-})(window.Render.funcs);
+})(window.Render.funcs, window.Render.util);
