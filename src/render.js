@@ -107,7 +107,7 @@
                     //单独处理一下img的data-bind-src
                     id = items[i].attributes['data-bind-src'];
                     if (id) {
-                        var xff = r.funcBind(key, id.value);
+                        var xff = r.syntax.buildFunc(key, id.value);
                         if (xff) {
                             value = xff(this, item);
                         } else {
