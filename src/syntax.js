@@ -158,7 +158,6 @@
                     case '/':
                     case '(':
                     case ')':
-                    case '#':
                     case "'":
                     case '"':
                     case '0':
@@ -172,6 +171,9 @@
                     case '8':
                     case '9':
                         val += words[i];
+                        break;
+                    case '#'://外部变量
+                        val += words[i].substring(1);
                         break;
                     default :
                         val += "my.util.getValue('" + words[i] + "',vo)";
