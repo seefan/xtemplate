@@ -69,7 +69,6 @@
      * @param html
      * @returns {string}
      */
-     //TODO 只过滤掉html标签，不仅仅是替换。
     u.html = function (html) {
         if (html && typeof(html) == 'string') {
             html = html.replace(/<[^<]*>/gi,'');
