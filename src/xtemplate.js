@@ -92,7 +92,7 @@
                 }
             }
             if (callback) {
-                callback(ok);
+                callback(ok,data);
             }
         };
         if (x.isInit) {
