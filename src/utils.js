@@ -72,9 +72,8 @@
      //TODO 只过滤掉html标签，不仅仅是替换。
     u.html = function (html) {
         if (html && typeof(html) == 'string') {
-            html = html.replace(/</g, '&lt;');    //置换符号<
-            html = html.replace(/>/g, '&gt;');    //置换符号>
-            return html;
+            html = html.replace(/<[^<]*>/gi,'');
+            return html.trim();
         } else {
             return this.getStringValue(html);
         }
