@@ -42,7 +42,7 @@
  * 目前已经支持了default,case等多个函数。
  * 输出html转义值: {title}
  * 直接输出原始值: {!title}
- * 模板内使用全局值: {#title}，使用$scope{#$scope.title}，输出$scope的原始值{#!$scope.title}
+ * 模板内使用外部变量: {#title}，使用$scope{#$scope.title}，输出$scope的原始值{#!$scope.title}
  * 使用函数处理: {title|default,'空标签'}
  * 多个函数可连续使用: {title|default,'空标签'|left,10}，title输出值默认为空标签，最多输出10个字符
  */
@@ -63,8 +63,10 @@
 
     /**
      * 绑定数据值
-     * @param id 缓存范围的id
      * @param data 要绑定的数据
+     * @param name 绑定对象的名称，默认为data
+     * 当未指定名称时，在绑定时直接使用属性名，例：{key:'key1'}，绑定时只需key即可
+     * 当指定名称时，在绑定时需要在属性名前加上指定的名称，例：{key:'key1'}，名称为data1,绑定时需data1.key
      */
     r.bindData = function (data, name) {
         if (!name) {
@@ -123,14 +125,13 @@
         }
     };
     /**
-     * 重新给某个对象绑定新的值
+     * 重新给某个对象绑定新的值，这个值不会被缓存
      * @param name
      * @param value
      */
     r.bindName = function (name, value) {
         var items = doc.getElementsByName(name);
         if (items) {
-            //w.$scope[name] = value;
             for (var i = 0; i < items.length; i++) {
                 this.util.setValue(items[i], value);
                 items[i].style.display = '';
@@ -138,21 +139,24 @@
         }
     };
     /**
-     * 循环绑定数据值
-     * @param id 缓存范围的id
+     * 循环绑定数据值,默认id为data
      * @param data 要绑定的数据
+     * @param name 缓存范围的id，默认为data
      */
-    r.bindRepeatData = function (data, id) {
+    r.bindRepeatData = function (data, name) {
         if (!data || data.length < 1) {
             return;
         }
-        var func = this.syntax.cacheRepeatFunc(id);
+        if(!name){
+            name='data';
+        }
+        var func = this.syntax.cacheRepeatFunc(name);
         if (func) {
             var html = '';
             for (var i = 0; i < data.length; i++) {
                 html += func(this, data[i]);
             }
-            r.syntax.setRepeatHtml(id, html);
+            r.syntax.setRepeatHtml(name, html);
         }
     };
 

@@ -7,7 +7,6 @@
     /**
      * 将数据与模块绑定
      * @param tmpl
-     * @param data
      * @returns {XML|string|void}
      */
     function runTemplate(tmpl) {
@@ -46,9 +45,8 @@
     }
 
     /**
-     * 处理函数
+     * 处理函数关键字
      * @param funcString
-     * @param val
      * @returns {*}
      */
     function runKeyword(funcString) {
@@ -108,7 +106,7 @@
      * 处理关键字
      * 有几类数据
      * 1、数字，可以以-.开头
-     * 2、$scope.全局变量
+     * 2、#开头的为全局变量
      * 3、循环变量
      * 4、以"或'包围的字符串
      * @param word
@@ -220,12 +218,12 @@
         return 0;
     }
 
-    //缓存
+    //语法缓存
     r.syntax.cache = {};
     /**
      * 返回绑定函数
      * @param name
-     * @param value
+     * @param html
      * @returns {*}
      */
     r.syntax.buildFunc = function (name, html) {
@@ -261,7 +259,7 @@
      * @returns {*}
      */
     r.syntax.cacheRepeatFunc = function (id) {
-        var f = this.syntax.cache['xdf-repeat-' + id];
+        var f = this.cache['xdf-repeat-' + id];
         if (f) {
             return f;
         } else {
@@ -275,11 +273,11 @@
      */
     r.syntax.initRepeat = function (item, id) {
         var html = item.innerHTML;
-        if (this.syntax.cache['xd-repeat-' + id] != item) {
-            this.syntax.cache['xd-repeat-' + id] = item;
+        if (this.cache['xd-repeat-' + id] != item) {
+            this.cache['xd-repeat-' + id] = item;
             item.innerHTML = '';
         }
-        var f = this.syntax.cache['xdf-repeat-' + id];
+        var f = this.cache['xdf-repeat-' + id];
         if (f) {
             return;
         }
@@ -288,7 +286,7 @@
             f = function () {
             };
         }
-        this.syntax.cache['xdf-repeat-' + id] = f;
+        this.cache['xdf-repeat-' + id] = f;
     };
     /**
      * 给缓存的对象设置值
@@ -296,7 +294,7 @@
      * @param html
      */
     r.syntax.setRepeatHtml = function (id, html) {
-        var item = this.syntax.cache['xd-repeat-' + id];
+        var item = this.cache['xd-repeat-' + id];
         if (item) {
             item.innerHTML = html;
         }
