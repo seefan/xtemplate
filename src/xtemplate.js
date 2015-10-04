@@ -60,15 +60,23 @@
         var opt = {};
         opt.url = postUrl;
         opt.data = param;
-
+        opt.type='POST';
         if (errorback) {
             opt.error = errorback;
         } else if (x.error_callback) {
             opt.error = x.error_callback;
+        }else{
+            opt.error=function(data,status){
+                console.log(status);
+            };
         }
-
         opt.success = function (data) {
-            var ok = true;
+            if(typeof data=== 'string'){
+                 /* jshint ignore:start */
+                data=eval('('+data+')');
+                 /* jshint ignore:end */
+            }
+            var ok = !!data;
             if (x.checkData) {
                 if (!x.checkData(data)) {
                     ok = false;

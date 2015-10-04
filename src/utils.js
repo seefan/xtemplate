@@ -86,17 +86,22 @@
     u.getName = function (key, data) {
         var value = data[key];
         var type = typeof value;
-        if (type == 'string' || type == 'number') {
-            return [key];
-        } else {
-            var names = [];
-            for (var k in value) {
-                var tkv = this.getName(k, value);
-                for (var i = 0; i < tkv.length; i++) {
-                    names.push(key + '.' + tkv[i]);
+        switch(type){
+            case 'string':
+            case 'number':
+            case 'boolean':
+                return [key];
+            case 'object':
+                var names = [];
+                for (var k in value) {
+                    var tkv = this.getName(k, value);
+                    for (var i = 0; i < tkv.length; i++) {
+                        names.push(key + '.' + tkv[i]);
+                    }
                 }
-            }
-            return names;
+                return names;
+            default:
+                return [];
         }
     };
     /**

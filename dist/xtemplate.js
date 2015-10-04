@@ -42,7 +42,7 @@
  * 目前已经支持了default,case等多个函数。
  * 输出html转义值: {title}
  * 直接输出原始值: {!title}
- * 模板内使用全局值: {#title}，使用$scope{#$scope.title}，输出$scope的原始值{#!$scope.title}
+ * 模板内使用外部变量: {#title}，使用$scope{#$scope.title}，输出$scope的原始值{#!$scope.title}
  * 使用函数处理: {title|default,'空标签'}
  * 多个函数可连续使用: {title|default,'空标签'|left,10}，title输出值默认为空标签，最多输出10个字符
  */
@@ -63,8 +63,10 @@
 
     /**
      * 绑定数据值
-     * @param id 缓存范围的id
      * @param data 要绑定的数据
+     * @param name 绑定对象的名称，默认为data
+     * 当未指定名称时，在绑定时直接使用属性名，例：{key:'key1'}，绑定时只需key即可
+     * 当指定名称时，在绑定时需要在属性名前加上指定的名称，例：{key:'key1'}，名称为data1,绑定时需data1.key
      */
     r.bindData = function (data, name) {
         if (!name) {
@@ -123,14 +125,13 @@
         }
     };
     /**
-     * 重新给某个对象绑定新的值
+     * 重新给某个对象绑定新的值，这个值不会被缓存
      * @param name
      * @param value
      */
     r.bindName = function (name, value) {
         var items = doc.getElementsByName(name);
         if (items) {
-            //w.$scope[name] = value;
             for (var i = 0; i < items.length; i++) {
                 this.util.setValue(items[i], value);
                 items[i].style.display = '';
@@ -138,21 +139,24 @@
         }
     };
     /**
-     * 循环绑定数据值
-     * @param id 缓存范围的id
+     * 循环绑定数据值,默认id为data
      * @param data 要绑定的数据
+     * @param name 缓存范围的id，默认为data
      */
-    r.bindRepeatData = function (data, id) {
+    r.bindRepeatData = function (data, name) {
         if (!data || data.length < 1) {
             return;
         }
-        var func = this.syntax.cacheRepeatFunc(id);
+        if(!name){
+            name='data';
+        }
+        var func = this.syntax.cacheRepeatFunc(name);
         if (func) {
             var html = '';
             for (var i = 0; i < data.length; i++) {
                 html += func(this, data[i]);
             }
-            r.syntax.setRepeatHtml(id, html);
+            r.syntax.setRepeatHtml(name, html);
         }
     };
 
@@ -243,9 +247,8 @@
      */
     u.html = function (html) {
         if (html && typeof(html) == 'string') {
-            html = html.replace(/</g, '&lt;');    //置换符号<
-            html = html.replace(/>/g, '&gt;');    //置换符号>
-            return html;
+            html = html.replace(/<[^<]*>/gi,'');
+            return html.trim();
         } else {
             return this.getStringValue(html);
         }
@@ -259,17 +262,22 @@
     u.getName = function (key, data) {
         var value = data[key];
         var type = typeof value;
-        if (type == 'string' || type == 'number') {
-            return [key];
-        } else {
-            var names = [];
-            for (var k in value) {
-                var tkv = this.getName(k, value);
-                for (var i = 0; i < tkv.length; i++) {
-                    names.push(key + '.' + tkv[i]);
+        switch(type){
+            case 'string':
+            case 'number':
+            case 'boolean':
+                return [key];
+            case 'object':
+                var names = [];
+                for (var k in value) {
+                    var tkv = this.getName(k, value);
+                    for (var i = 0; i < tkv.length; i++) {
+                        names.push(key + '.' + tkv[i]);
+                    }
                 }
-            }
-            return names;
+                return names;
+            default:
+                return [];
         }
     };
     /**
@@ -380,7 +388,6 @@
     /**
      * 将数据与模块绑定
      * @param tmpl
-     * @param data
      * @returns {XML|string|void}
      */
     function runTemplate(tmpl) {
@@ -419,9 +426,8 @@
     }
 
     /**
-     * 处理函数
+     * 处理函数关键字
      * @param funcString
-     * @param val
      * @returns {*}
      */
     function runKeyword(funcString) {
@@ -481,7 +487,7 @@
      * 处理关键字
      * 有几类数据
      * 1、数字，可以以-.开头
-     * 2、$scope.全局变量
+     * 2、#开头的为全局变量
      * 3、循环变量
      * 4、以"或'包围的字符串
      * @param word
@@ -593,12 +599,12 @@
         return 0;
     }
 
-    //缓存
+    //语法缓存
     r.syntax.cache = {};
     /**
      * 返回绑定函数
      * @param name
-     * @param value
+     * @param html
      * @returns {*}
      */
     r.syntax.buildFunc = function (name, html) {
@@ -634,7 +640,7 @@
      * @returns {*}
      */
     r.syntax.cacheRepeatFunc = function (id) {
-        var f = this.syntax.cache['xdf-repeat-' + id];
+        var f = this.cache['xdf-repeat-' + id];
         if (f) {
             return f;
         } else {
@@ -648,11 +654,11 @@
      */
     r.syntax.initRepeat = function (item, id) {
         var html = item.innerHTML;
-        if (this.syntax.cache['xd-repeat-' + id] != item) {
-            this.syntax.cache['xd-repeat-' + id] = item;
+        if (this.cache['xd-repeat-' + id] != item) {
+            this.cache['xd-repeat-' + id] = item;
             item.innerHTML = '';
         }
-        var f = this.syntax.cache['xdf-repeat-' + id];
+        var f = this.cache['xdf-repeat-' + id];
         if (f) {
             return;
         }
@@ -661,7 +667,7 @@
             f = function () {
             };
         }
-        this.syntax.cache['xdf-repeat-' + id] = f;
+        this.cache['xdf-repeat-' + id] = f;
     };
     /**
      * 给缓存的对象设置值
@@ -669,7 +675,7 @@
      * @param html
      */
     r.syntax.setRepeatHtml = function (id, html) {
-        var item = this.syntax.cache['xd-repeat-' + id];
+        var item = this.cache['xd-repeat-' + id];
         if (item) {
             item.innerHTML = html;
         }
@@ -830,8 +836,11 @@
 })(window.Render.funcs, window.Render.util);;(function (d, w, x) {
     'use strict';
     var r = w.Render;
+    //是否已初始化
     x.isInit = false;
+    //是否使用其它的ajax方法，默认使用jquery
     x.optAjax = false;
+    //准备方法，XTemplate的入口方法，XTemplate准备好后将执行这个方法，以便自动执行一些绑定函数等。
     x.ready = function (callback, reload) {
         if (!x.isInit) {
             if (typeof callback === 'function') {
@@ -847,6 +856,7 @@
             }
         }
     };
+    //初始化
     x.init = function () {
         if (r) {
             r.init(d.all);
@@ -856,7 +866,11 @@
             }
         }
     };
-    //参数
+    /**
+    * 取url的参数，并可以指定默认值
+    * @param key 参数名
+    * @oaram defaultValue 默认值，可选
+    */
     x.query = function (key,defaultValue) {
         if (!w.query_args) {
             w.query_args = r.util.getUrlQuery();
@@ -869,26 +883,35 @@
     //绑定工具
     x.util = r.util;
     /**
-     * 加载数据
-     * @param id
-     * @param postUrl
-     * @param param
-     * @param callback
-     * @param errorback
+     * 使用ajax加载数据
+     * @param id 绑定的id，可以为空。
+     * @param postUrl       请求数据的url
+     * @param param         请求的参数，可为空
+     * @param backdata      数据处理方法，如果请求的数据正常，就返回可以绑定的数据；如果出错就返回false，将不执行绑定。
+     * @param callback      请求成功的回调方法，可为空
+     * @param errorback     请求失败的回调方法，可为空
      */
     x.load = function (id, postUrl, param, backdata, callback, errorback) {
         var opt = {};
         opt.url = postUrl;
         opt.data = param;
-
+        opt.type='POST';
         if (errorback) {
             opt.error = errorback;
         } else if (x.error_callback) {
             opt.error = x.error_callback;
+        }else{
+            opt.error=function(data,status){
+                console.log(status);
+            };
         }
-
         opt.success = function (data) {
-            var ok = true;
+            if(typeof data=== 'string'){
+                 /* jshint ignore:start */
+                data=eval('('+data+')');
+                 /* jshint ignore:end */
+            }
+            var ok = !!data;
             if (x.checkData) {
                 if (!x.checkData(data)) {
                     ok = false;
@@ -912,7 +935,7 @@
                 }
             }
             if (callback) {
-                callback(ok);
+                callback(ok,data);
             }
         };
         if (x.isInit) {
@@ -930,6 +953,7 @@
     x.setAjax = function (ajax) {
         this.optAjax = ajax;
     };
+    //开始初始化将执行ready方法
     if (d.readyState === 'complete') {
         x.init();
     } else {
