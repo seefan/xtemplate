@@ -121,6 +121,7 @@
                 }
 
                 this.util.setValue(items[i], value);
+                items[i].style.display = '';
             }
         }
     };

@@ -297,6 +297,7 @@
         var item = this.cache['xd-repeat-' + id];
         if (item) {
             item.innerHTML = html;
+            item.style.display='';
         }
     };
 })(window.Render);

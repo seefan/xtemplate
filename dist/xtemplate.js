@@ -121,6 +121,7 @@
                 }
 
                 this.util.setValue(items[i], value);
+                items[i].style.display = '';
             }
         }
     };
@@ -678,6 +679,7 @@
         var item = this.cache['xd-repeat-' + id];
         if (item) {
             item.innerHTML = html;
+            item.style.display='';
         }
     };
 })(window.Render);;/**
