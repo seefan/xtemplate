@@ -3,8 +3,9 @@
  *
  * 如果需要自行扩展，请使用window.Render的addFunc函数
  */
-(function (f, util) {
+(function (r) {
     'use strict';
+    var f = window.Render.funcs;
     /**
      * 默认值
      * @param val
@@ -110,12 +111,31 @@
         return result;
     };
     /**
+     * 简单的循环
+     * @param list 要循环的数组
+     * @param tmpl 模板
+     * @returns {string} 输出的html
+     */
+    f.range = function (list, tmpl) {
+        var html = '';
+        if (tmpl) {
+            tmpl = tmpl.replace('(', '{').replace(')', '}');
+            var func = r.syntax.buildFunc('range', tmpl);
+            if (func) {
+                for (var i = 0; i < list.length; i++) {
+                    html += func(r, list[i]);
+                }
+            }
+        }
+        return html;
+    };
+    /**
      * 过滤html字符
      * @param html
      * @returns {string|*}
      */
     f.filter_html = function (html) {
-        return util.html(html);
+        return r.util.html(html);
     };
     /**
      * 从左侧截断字串
@@ -151,4 +171,4 @@
         }
         return newStr;
     };
-})(window.Render.funcs, window.Render.util);
+})(window.Render);

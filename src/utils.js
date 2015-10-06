@@ -36,7 +36,7 @@
         if (typeof(val) == 'string') {
             return val.replace(/\r/g, '').replace(/\n/g, '').replace('　', '').trim();
         } else {
-            return u.trim(u.getStringValue(val));
+            return u.trim(u.getDefaultValue(val));
         }
     };
     /**
@@ -71,11 +71,19 @@
      */
     u.html = function (html) {
         if (html && typeof(html) == 'string') {
-            html = html.replace(/<[^<]*>/gi,'');
+            html = html.replace(/<[^<]*>/gi, '');
             return html.trim();
         } else {
-            return this.getStringValue(html);
+            return this.getDefaultValue(html);
         }
+    };
+    /**
+     * 判断变量是否为数组
+     * @param val
+     * @returns {boolean}
+     */
+    u.isArray = function (val) {
+        return toString.apply(val) === "[object Array]";
     };
     /**
      * 取数组的key全集
@@ -86,20 +94,25 @@
     u.getName = function (key, data) {
         var value = data[key];
         var type = typeof value;
-        switch(type){
+        switch (type) {
             case 'string':
             case 'number':
             case 'boolean':
                 return [key];
             case 'object':
-                var names = [];
-                for (var k in value) {
-                    var tkv = this.getName(k, value);
-                    for (var i = 0; i < tkv.length; i++) {
-                        names.push(key + '.' + tkv[i]);
+                if (this.isArray(value)) {
+                    return [key];
+                } else {
+                    var names = [];
+                    for (var k in value) {
+                        var tkv = this.getName(k, value);
+                        for (var i = 0; i < tkv.length; i++) {
+                            names.push(key + '.' + tkv[i]);
+                        }
                     }
+                    return names;
                 }
-                return names;
+                break;
             default:
                 return [];
         }
@@ -137,18 +150,20 @@
         for (var i = 0; result && i < keys.length; i++) {
             result = result[keys[i]];
         }
-        return this.getStringValue(result);
+        //
+        return this.getDefaultValue(result);
     };
     /**
-     * 取默认显示的值
+     * 取值
+     * 支持两种数据，简单变量和数组，如果为null或是undefined，自动转为空串
      * @param val
      * @returns {*}
      */
-    u.getStringValue = function (val) {
+    u.getDefaultValue = function (val) {
         if (val === null || typeof val == 'undefined') {
             return '';
         } else {
-            return val.toString();
+            return val;
         }
     };
     /**
