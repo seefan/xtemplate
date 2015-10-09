@@ -32,18 +32,19 @@
         }
     };
     /**
-    * 取url的参数，并可以指定默认值
-    * @param key 参数名
-    * @oaram defaultValue 默认值，可选
-    */
-    x.query = function (key,defaultValue) {
+     * 取url的参数，并可以指定默认值
+     * @param key 参数名
+     * @oaram defaultValue 默认值，可选
+     */
+    x.query = function (key, defaultValue) {
         if (!w.query_args) {
             w.query_args = r.util.getUrlQuery();
         }
-        var tmp= w.query_args[key];
-        if(!tmp){
+        var tmp = w.query_args[key];
+        if (!tmp) {
             return defaultValue;
         }
+        return tmp;
     };
     //绑定工具
     x.util = r.util;
@@ -60,21 +61,21 @@
         var opt = {};
         opt.url = postUrl;
         opt.data = param;
-        opt.type='POST';
+        opt.type = 'POST';
         if (errorback) {
             opt.error = errorback;
         } else if (x.error_callback) {
             opt.error = x.error_callback;
-        }else{
-            opt.error=function(data,status){
+        } else {
+            opt.error = function (data, status) {
                 console.log(status);
             };
         }
         opt.success = function (data) {
-            if(typeof data=== 'string'){
-                 /* jshint ignore:start */
-                data=eval('('+data+')');
-                 /* jshint ignore:end */
+            if (typeof data === 'string') {
+                /* jshint ignore:start */
+                data = eval('(' + data + ')');
+                /* jshint ignore:end */
             }
             var ok = !!data;
             if (x.checkData) {
@@ -100,7 +101,7 @@
                 }
             }
             if (callback) {
-                callback(ok,data);
+                callback(ok, data);
             }
         };
         if (x.isInit) {
