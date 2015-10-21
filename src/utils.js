@@ -157,6 +157,21 @@
         w.location.href = url;
     };
     /**
+     * 显示一个对象
+     * 设置style.display=''，同时去掉class中名为hide样式
+     * @param ele
+     */
+    u.show = function (ele) {
+        if (ele) {
+            if (ele.style.display == 'none') {
+                ele.style.display = '';
+            }
+            if (ele.classList.contains('hide')) {
+                ele.classList.remove('hide');
+            }
+        }
+    };
+    /**
      * 取url的所有参数
      * @returns {{}}
      */

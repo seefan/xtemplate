@@ -4,7 +4,7 @@
  * 目前支持两种形式的绑定，单变量绑定和数组。
  * 单变量绑定是以html中name名字为绑定对象，只要名字和绑定的变量同名，即会自动赋值。
  *
- * 例如：<p name='title'></p>
+ * 例如：<p data-bind='title'></p>
  * 这时如果有一个变量为如下结构{title:'hello world'}，那么，这个name为title的p标签就会显示hello world。
  * 最终会生成
  * <p name='title'>hello world</p>
@@ -30,10 +30,10 @@
  * 正确的做法是<img data-bind-src='/imgsrc/abc.jsp'>或<img data-bind-src='/imgsrc/abc.jsp' src='默认图'>
  *
  * data-bind-to，是指定绑定的属性名称，同时可以使用模板。
- * 例如：<a name='product_id' data-bind-to='href' href='/news/{product_type}/{product_id}/detail.html'>click</a>
+ * 例如：<a data-bind='product_id' data-bind-to='href' href='/news/{product_type}/{product_id}/detail.html'>click</a>
  * 在使用bindData时，会将href的内容格式化后重新替换href，以生成一个新的href。
  * 特殊用法，$scope的使用
- * <a name='product_id' data-bind-to='href' href='/news/{$scope.type}/{product_id}/detail.html'>click</a>
+ * <a data-bind='product_id' data-bind-to='href' href='/news/{$scope.type}/{product_id}/detail.html'>click</a>
  * 如果$scope中有type属性，该值会被带入。
  * 如果其它模板中有与{$scope.type}冲突的，以至于我们取不到正确的模板，那么在前面加一个#来解决
  * {#$scope.type}
@@ -69,7 +69,7 @@
      * 当指定名称时，在绑定时需要在属性名前加上指定的名称，例：{key:'key1'}，名称为data1,绑定时需data1.key
      * 绑定的数据会缓存在$scope内
      * 示例：
-     * bindData('data',{id:1});绑定时用data.id
+     * bindData('data',{id:1});绑定时用data-bind='data.id'，如<p data-bind='data.id'/>
      * bindData({id:1});绑定时用id
      */
     r.bindData = function (name, data) {
@@ -93,7 +93,7 @@
                 key = name + '.' + key;
                 item = w.$scope;
             }
-            var items = doc.getElementsByName(key);
+            var items = doc.querySelectorAll('[data-bind="' + key + '"]');
             var value;
             for (i = 0; i < items.length; i++) {
                 value = '';
@@ -126,27 +126,27 @@
                 }
 
                 this.util.setValue(items[i], value);
-                items[i].style.display = '';
+                this.util.show(items[i]);
             }
         }
     };
     /**
      * 重新给某个对象绑定新的值，修改后的值不会更新$scope内部缓存的值
-     * @param name 绑定名
+     * @param name 绑定名，用data-bind指定
      * @param value 绑定值
      */
     r.bindName = function (name, value) {
-        var items = doc.getElementsByName(name);
+        var items = doc.querySelectorAll('[data-bind=' + key + ']');
         if (items) {
             for (var i = 0; i < items.length; i++) {
                 this.util.setValue(items[i], value);
-                items[i].style.display = '';
+                this.util.show(items[i]);
             }
         }
     };
     /**
      * 循环绑定数据值
-     * @param name 缓存范围的id，默认为data
+     * @param name 要循环输出的模板范围的名称，默认为data
      * @param data 要绑定的数据
      */
     r.bindRepeatData = function (name, data) {
@@ -163,7 +163,7 @@
             for (var i = 0; i < data.length; i++) {
                 html += func(this, data[i]);
             }
-            r.syntax.setRepeatHtml(name, html);
+            this.syntax.setRepeatHtml(name, html);
         }
     };
 
@@ -172,6 +172,9 @@
      * 如果需要自行扩展Render的函数，请使用本函数。
      * 这些函数可以在html的模板中使用
      * 增加自定义函数
+     * addFunc('test',function(){
+     *    alert('test');
+     * });
      * @param name 函数的名称
      * @param func 函数体
      */
