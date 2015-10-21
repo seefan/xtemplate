@@ -21,7 +21,9 @@
             }
         }
     };
-    //初始化
+    /**
+     * 初始化
+     */
     x.init = function () {
         if (r) {
             r.init(d.all);
@@ -34,7 +36,7 @@
     /**
      * 取url的参数，并可以指定默认值
      * @param key 参数名
-     * @oaram defaultValue 默认值，可选
+     * @poaram defaultValue 默认值，可选
      */
     x.query = function (key, defaultValue) {
         if (!w.query_args) {
@@ -49,8 +51,8 @@
     //绑定工具
     x.util = r.util;
     /**
-     * 使用ajax加载数据
-     * @param id 绑定的id，可以为空。
+     * 使用ajax加载数据，可选的绑定到页面
+     * @param id 绑定的id
      * @param postUrl       请求数据的url
      * @param param         请求的参数，可为空
      * @param backdata      数据处理方法，如果请求的数据正常，就返回可以绑定的数据；如果出错就返回false，将不执行绑定。

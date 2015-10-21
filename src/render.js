@@ -63,14 +63,19 @@
 
     /**
      * 绑定数据值
+     * @param name 绑定对象的名称，如果不设置时定的key不加绑定名
      * @param data 要绑定的数据
-     * @param name 绑定对象的名称，默认为data
      * 当未指定名称时，在绑定时直接使用属性名，例：{key:'key1'}，绑定时只需key即可
      * 当指定名称时，在绑定时需要在属性名前加上指定的名称，例：{key:'key1'}，名称为data1,绑定时需data1.key
+     * 绑定的数据会缓存在$scope内
+     * 示例：
+     * bindData('data',{id:1});绑定时用data.id
+     * bindData({id:1});绑定时用id
      */
-    r.bindData = function (data, name) {
-        if (!name) {
-            name = 'data';
+    r.bindData = function (name, data) {
+        if (typeof data == 'undefined') {
+            data = name;
+            name = '__data';
         }
         w.$scope[name] = data;
         this.$bindKey[name] = [];
@@ -84,7 +89,7 @@
 
         for (var j = 0; j < this.$bindKey[name].length; j++) {
             var key = this.$bindKey[name][j], item = w.$scope[name];
-            if (name != 'data') {
+            if (name != '__data') {
                 key = name + '.' + key;
                 item = w.$scope;
             }
@@ -126,9 +131,9 @@
         }
     };
     /**
-     * 重新给某个对象绑定新的值，这个值不会被缓存
-     * @param name
-     * @param value
+     * 重新给某个对象绑定新的值，修改后的值不会更新$scope内部缓存的值
+     * @param name 绑定名
+     * @param value 绑定值
      */
     r.bindName = function (name, value) {
         var items = doc.getElementsByName(name);
@@ -140,16 +145,17 @@
         }
     };
     /**
-     * 循环绑定数据值,默认id为data
-     * @param data 要绑定的数据
+     * 循环绑定数据值
      * @param name 缓存范围的id，默认为data
+     * @param data 要绑定的数据
      */
-    r.bindRepeatData = function (data, name) {
+    r.bindRepeatData = function (name, data) {
+        if (typeof data == 'undefined') {
+            data = name;
+            name = 'data';
+        }
         if (!data || data.length < 1) {
             return;
-        }
-        if(!name){
-            name='data';
         }
         var func = this.syntax.cacheRepeatFunc(name);
         if (func) {
@@ -166,10 +172,10 @@
      * 如果需要自行扩展Render的函数，请使用本函数。
      * 这些函数可以在html的模板中使用
      * 增加自定义函数
-     * @param func 函数体
      * @param name 函数的名称
+     * @param func 函数体
      */
-    r.addFunc = function (func, name) {
+    r.addFunc = function (name, func) {
         if (func && name) {
             this.funcs[name] = func;
         }

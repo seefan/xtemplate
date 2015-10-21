@@ -1,34 +1,6 @@
 (function (w, u) {
     'use strict';
     /**
-     * 在指定对象平级附加一个对象
-     * @param newEl
-     * @param targetEl
-     */
-    u.insertAfter = function (newEl, targetEl) {
-        var parentEl = targetEl.parentNode;
-        if (!parentEl) {
-            return;
-        }
-        if (parentEl.lastChild === targetEl) {
-            parentEl.appendChild(newEl);
-        } else {
-            parentEl.insertBefore(newEl, targetEl.nextSibling);
-        }
-    };
-    /**
-     * 取下一个节点
-     * @param ele
-     * @returns {*}
-     */
-    u.getNextSibling = function (ele) {
-        if (ele.nextElementSibling && ele.nextElementSibling.tagName == ele.tagName) {
-            return ele.nextElementSibling;
-        } else {
-            return false;
-        }
-    };
-    /**
      * 清理代码
      * @param val
      */
@@ -185,7 +157,7 @@
         w.location.href = url;
     };
     /**
-     * 取url的参数
+     * 取url的所有参数
      * @returns {{}}
      */
     u.getUrlQuery = function () {

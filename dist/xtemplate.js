@@ -63,14 +63,19 @@
 
     /**
      * 绑定数据值
+     * @param name 绑定对象的名称，如果不设置时定的key不加绑定名
      * @param data 要绑定的数据
-     * @param name 绑定对象的名称，默认为data
      * 当未指定名称时，在绑定时直接使用属性名，例：{key:'key1'}，绑定时只需key即可
      * 当指定名称时，在绑定时需要在属性名前加上指定的名称，例：{key:'key1'}，名称为data1,绑定时需data1.key
+     * 绑定的数据会缓存在$scope内
+     * 示例：
+     * bindData('data',{id:1});绑定时用data.id
+     * bindData({id:1});绑定时用id
      */
-    r.bindData = function (data, name) {
-        if (!name) {
-            name = 'data';
+    r.bindData = function (name, data) {
+        if (typeof data == 'undefined') {
+            data = name;
+            name = '__data';
         }
         w.$scope[name] = data;
         this.$bindKey[name] = [];
@@ -84,7 +89,7 @@
 
         for (var j = 0; j < this.$bindKey[name].length; j++) {
             var key = this.$bindKey[name][j], item = w.$scope[name];
-            if (name != 'data') {
+            if (name != '__data') {
                 key = name + '.' + key;
                 item = w.$scope;
             }
@@ -126,9 +131,9 @@
         }
     };
     /**
-     * 重新给某个对象绑定新的值，这个值不会被缓存
-     * @param name
-     * @param value
+     * 重新给某个对象绑定新的值，修改后的值不会更新$scope内部缓存的值
+     * @param name 绑定名
+     * @param value 绑定值
      */
     r.bindName = function (name, value) {
         var items = doc.getElementsByName(name);
@@ -140,16 +145,17 @@
         }
     };
     /**
-     * 循环绑定数据值,默认id为data
-     * @param data 要绑定的数据
+     * 循环绑定数据值
      * @param name 缓存范围的id，默认为data
+     * @param data 要绑定的数据
      */
-    r.bindRepeatData = function (data, name) {
+    r.bindRepeatData = function (name, data) {
+        if (typeof data == 'undefined') {
+            data = name;
+            name = 'data';
+        }
         if (!data || data.length < 1) {
             return;
-        }
-        if(!name){
-            name='data';
         }
         var func = this.syntax.cacheRepeatFunc(name);
         if (func) {
@@ -166,10 +172,10 @@
      * 如果需要自行扩展Render的函数，请使用本函数。
      * 这些函数可以在html的模板中使用
      * 增加自定义函数
-     * @param func 函数体
      * @param name 函数的名称
+     * @param func 函数体
      */
-    r.addFunc = function (func, name) {
+    r.addFunc = function (name, func) {
         if (func && name) {
             this.funcs[name] = func;
         }
@@ -177,34 +183,6 @@
 })
 (window, document, window.Render = {});;(function (w, u) {
     'use strict';
-    /**
-     * 在指定对象平级附加一个对象
-     * @param newEl
-     * @param targetEl
-     */
-    u.insertAfter = function (newEl, targetEl) {
-        var parentEl = targetEl.parentNode;
-        if (!parentEl) {
-            return;
-        }
-        if (parentEl.lastChild === targetEl) {
-            parentEl.appendChild(newEl);
-        } else {
-            parentEl.insertBefore(newEl, targetEl.nextSibling);
-        }
-    };
-    /**
-     * 取下一个节点
-     * @param ele
-     * @returns {*}
-     */
-    u.getNextSibling = function (ele) {
-        if (ele.nextElementSibling && ele.nextElementSibling.tagName == ele.tagName) {
-            return ele.nextElementSibling;
-        } else {
-            return false;
-        }
-    };
     /**
      * 清理代码
      * @param val
@@ -362,7 +340,7 @@
         w.location.href = url;
     };
     /**
-     * 取url的参数
+     * 取url的所有参数
      * @returns {{}}
      */
     u.getUrlQuery = function () {
@@ -706,20 +684,23 @@
     'use strict';
     var f = window.Render.funcs;
     /**
-     * 默认值
-     * @param val
-     * @param defaultVal
+     * 指定输出的默认值，如果有值就原样输出，如果空或是null，就输出默认值。
+     * 示例：{name|default,'小明'}
+     * @param val 变量名
+     * @param defaultVal 默认值
      * @returns {*}
      */
     f.default = function (val, defaultVal) {
-        if (!val && defaultVal) {
+        if (typeof(val) == 'undefined' || val === '' || val === 'null') {
             return defaultVal;
         }
         return val;
     };
     /**
-     * 按值选择返回内容
-     * @param val
+     * 根据设定值返回指定内容
+     * 示例：{status|case,-1,'审核不通过',1,'审核通过','待审核'}
+     * 参数说明：参数成对出现，第一个是设定值，第二是要返回的值；后续可以增加多个成队的参数；最后一个参数为默认值，所有设定值都不满足时输出
+     * @param val 变量名
      * @returns {*}
      */
     f.case = function (val) {
@@ -732,10 +713,10 @@
     };
     /**
      * 格式化货币
-     * @param val
+     * @param val 变量名
      * @returns {Number}
      */
-    f.format_currency = function (val) {
+    f.format_money = function (val) {
         return parseFloat(val);
     };
 
@@ -745,10 +726,10 @@
      * 月(M)、日(d)、小时(h)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符，
      * 年(y)可以用 1-4 个占位符，毫秒(S)只能用 1 个占位符(是 1-3 位的数字)
      * 例子：
-     * (new Date()).Format("yyyy-MM-dd hh:mm:ss.S") ==> 2006-07-02 08:09:04.423
-     * (new Date()).Format("yyyy-M-d h:m:s.S")      ==> 2006-7-2 8:9:4.18
-     * @param val
-     * @param fmt
+     * {date|format_date,"yyyy-MM-dd hh:mm:ss.S"} ==> 2006-07-02 08:09:04.423
+     * {date|format_date,"yyyy-M-d h:m:s.S"}      ==> 2006-7-2 8:9:4.18
+     * @param val 变量名
+     * @param fmt 格式串
      */
     f.format_date = function (val, fmt) {
         if (typeof(val) != 'object') {
@@ -776,11 +757,15 @@
     };
     /**
      * 数字保留小数位数
-     * @param num
-     * @param c
+     * 示例：{float_num|fixed,2}
+     * @param num 要格式的小数
+     * @param c 保留的小数位置，默认为0
      * @returns {string}
      */
     f.fixed = function (num, c) {
+        if (typeof c == 'undefined') {
+            c = 0;
+        }
         if (num) {
             return num.toFixed(c);
         } else {
@@ -788,18 +773,19 @@
         }
     };
     /**
-     * 没有正确的函数处理时，用此函数处理
-     * @param val
+     * 没有正确的函数处理时，用此函数处理，直接输出变量值
+     * 外部不要使用
+     * @param val 变量名
      * @returns {*}
      */
     f.noFunc = function (val) {
         return val;
     };
     /**
-     * 重复num次val
-     *
-     * @param num
-     * @param val
+     * 重复输出num次val
+     * {num|repeat,'*'}，当num=4时，输出****
+     * @param num 重复次数
+     * @param val 要重复的内容
      * @returns {string}
      */
     f.repeat = function (num, val) {
@@ -810,7 +796,8 @@
         return result;
     };
     /**
-     * 简单的循环
+     * 内部实现简单的循环，注意，内部模板和普通模板有区别，需要使用小括号代替大扩号。
+     * 示例：{array|range,'(id),'}，如果array=[{id:0},{id:1}]，会输出0,1,
      * @param list 要循环的数组
      * @param tmpl 模板
      * @returns {string} 输出的html
@@ -829,16 +816,19 @@
         return html;
     };
     /**
-     * 过滤html字符
-     * @param html
+     * 过滤html字符，因为系统默认已过滤html，所以此函数一般外部不使用
+     * @param html 待过滤的html代码
+     * 示例：{code|filter_html}
      * @returns {string|*}
      */
     f.filter_html = function (html) {
         return r.util.html(html);
     };
     /**
-     * 从左侧截断字串
-     * @param str
+     * 从左侧按指定长度截断字串，注意一个汉字按2个字符计算，这样可以准确的控制格式
+     * 示例：{str|left,20,'...'}
+     * 示例：{str|left,20}
+     * @param str 要截断的字串
      * @param len 截断后的字串长度，一个汉字按2个字符计算
      * @param dot 可选，截断后补充的串，示例:"..."
      * @returns {string}
@@ -893,7 +883,9 @@
             }
         }
     };
-    //初始化
+    /**
+     * 初始化
+     */
     x.init = function () {
         if (r) {
             r.init(d.all);
@@ -906,7 +898,7 @@
     /**
      * 取url的参数，并可以指定默认值
      * @param key 参数名
-     * @oaram defaultValue 默认值，可选
+     * @poaram defaultValue 默认值，可选
      */
     x.query = function (key, defaultValue) {
         if (!w.query_args) {
@@ -921,8 +913,8 @@
     //绑定工具
     x.util = r.util;
     /**
-     * 使用ajax加载数据
-     * @param id 绑定的id，可以为空。
+     * 使用ajax加载数据，可选的绑定到页面
+     * @param id 绑定的id
      * @param postUrl       请求数据的url
      * @param param         请求的参数，可为空
      * @param backdata      数据处理方法，如果请求的数据正常，就返回可以绑定的数据；如果出错就返回false，将不执行绑定。
