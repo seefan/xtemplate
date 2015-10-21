@@ -26,7 +26,7 @@
      */
     x.init = function () {
         if (r) {
-            r.init(d.all);
+            r.init(d);
             x.isInit = true;
             if (x.callback) {
                 x.callback();

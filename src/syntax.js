@@ -242,9 +242,10 @@
     };
     /**
      * 初始化语法结构
-     * @param items 渲染器的有效范围
+     * @param document 渲染器的有效范围
      */
-    r.init = function (items) {
+    r.init = function (document) {
+        var items = document.querySelectorAll('[data-repeat-name]');
         for (var i = 0; i < items.length; i++) {
             var item = items[i];
             var id = item.attributes['data-repeat-name'];
