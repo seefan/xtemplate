@@ -227,7 +227,13 @@
      * @returns {*}
      */
     r.syntax.buildFunc = function (name, html) {
-        var tpl = r.util.trim(decodeURIComponent(html));
+        var tpl;
+        try {
+            tpl = decodeURIComponent(html);
+        } catch (e) {
+            tpl = html;
+        }
+        tpl = r.util.trim(tpl);
         if (tpl.length > 0) {
             var funcBody = 'return ' + runTemplate(tpl) + ';';
             try {

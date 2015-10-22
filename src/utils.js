@@ -20,7 +20,12 @@
         var tag = ele.tagName;
         var id = ele.attributes['data-bind-to'];
         if (id) {
-            ele[id.value] = value;
+            var attrName = id.value;
+            if (ele.attributes.hasOwnProperty(attrName)) {
+                ele.setAttribute(attrName, value);
+            } else {
+                ele[id.value] = value;
+            }
         } else {
             switch (tag) {
                 case 'IMG':

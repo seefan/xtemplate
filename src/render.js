@@ -94,12 +94,17 @@
                 item = w.$scope;
             }
             var items = doc.querySelectorAll('[data-bind="' + key + '"]');
-            var value;
+            var value, tpl;
             for (i = 0; i < items.length; i++) {
                 value = '';
                 var id = items[i].attributes['data-bind-to'];
                 if (id) {
-                    var xf = r.syntax.buildFunc(key, items[i][id.value]);
+                    if (items[i].attributes.hasOwnProperty(id.value)) {
+                        tpl = items[i].attributes[id.value].value;
+                    } else {
+                        tpl = items[i][id.value];
+                    }
+                    var xf = r.syntax.buildFunc(key, tpl);
                     if (xf) {
                         value = xf(this, item);
                     } else {

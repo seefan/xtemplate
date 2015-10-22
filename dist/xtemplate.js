@@ -94,12 +94,17 @@
                 item = w.$scope;
             }
             var items = doc.querySelectorAll('[data-bind="' + key + '"]');
-            var value;
+            var value, tpl;
             for (i = 0; i < items.length; i++) {
                 value = '';
                 var id = items[i].attributes['data-bind-to'];
                 if (id) {
-                    var xf = r.syntax.buildFunc(key, items[i][id.value]);
+                    if (items[i].attributes.hasOwnProperty(id.value)) {
+                        tpl = items[i].attributes[id.value].value;
+                    } else {
+                        tpl = items[i][id.value];
+                    }
+                    var xf = r.syntax.buildFunc(key, tpl);
                     if (xf) {
                         value = xf(this, item);
                     } else {
@@ -206,7 +211,12 @@
         var tag = ele.tagName;
         var id = ele.attributes['data-bind-to'];
         if (id) {
-            ele[id.value] = value;
+            var attrName = id.value;
+            if (ele.attributes.hasOwnProperty(attrName)) {
+                ele.setAttribute(attrName, value);
+            } else {
+                ele[id.value] = value;
+            }
         } else {
             switch (tag) {
                 case 'IMG':
@@ -620,7 +630,13 @@
      * @returns {*}
      */
     r.syntax.buildFunc = function (name, html) {
-        var tpl = r.util.trim(decodeURIComponent(html));
+        var tpl;
+        try {
+            tpl = decodeURIComponent(html);
+        } catch (e) {
+            tpl = html;
+        }
+        tpl = r.util.trim(tpl);
         if (tpl.length > 0) {
             var funcBody = 'return ' + runTemplate(tpl) + ';';
             try {
