@@ -18,13 +18,15 @@
      */
     u.setValue = function (ele, value) {
         var tag = ele.tagName;
-        var id = ele.attributes['data-bind-to'];
-        if (id) {
-            var attrName = id.value;
-            if (ele.attributes.hasOwnProperty(attrName)) {
-                ele.setAttribute(attrName, value);
-            } else {
-                ele[id.value] = value;
+        var bs = this.getBindToNameList(ele);
+        if (bs.length > 0) {
+            for (var i in bs) {
+                var attrName = bs[i];
+                if (ele.attributes.hasOwnProperty(attrName)) {
+                    ele.setAttribute(attrName, value);
+                } else {
+                    ele[attrName] = value;
+                }
             }
         } else {
             switch (tag) {
@@ -160,6 +162,26 @@
             url += arguments[i] + '=' + encodeURIComponent(arguments[i + 1]) + '&';
         }
         w.location.href = url;
+    };
+    /**
+     * 取绑定名列表，多个绑定名用空格分开
+     * @param item 目标
+     * @returns {Array} 返回绑定名列表
+     */
+    u.getBindToNameList = function (item) {
+        var binds = item.attributes['data-bind-to'];
+        var re = [];
+        if (binds && binds.value) {
+            var sps = binds.value.split(' ');
+            var tmp;
+            for (var i in sps) {
+                tmp = u.trim(sps[i]);
+                if (tmp !== '') {
+                    re.push(tmp);
+                }
+            }
+        }
+        return re;
     };
     /**
      * 显示一个对象

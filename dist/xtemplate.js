@@ -29,7 +29,7 @@
  * 例如：<img src='/{imgsrc}/abc.jpg'>这个src是无效的，但浏览器会加载这个错误的地址引起一次无效的http请求。
  * 正确的做法是<img data-bind-src='/imgsrc/abc.jsp'>或<img data-bind-src='/imgsrc/abc.jsp' src='默认图'>
  *
- * data-bind-to，是指定绑定的属性名称，同时可以使用模板。
+ * data-bind-to，是指定绑定的属性名称，同时可以使用模板。如果要绑定多个属性，用空格分开。
  * 例如：<a data-bind='product_id' data-bind-to='href' href='/news/{product_type}/{product_id}/detail.html'>click</a>
  * 在使用bindData时，会将href的内容格式化后重新替换href，以生成一个新的href。
  * 特殊用法，$scope的使用
@@ -97,27 +97,31 @@
             var value, tpl;
             for (i = 0; i < items.length; i++) {
                 value = '';
-                var id = items[i].attributes['data-bind-to'];
-                if (id) {
-                    if (items[i].attributes.hasOwnProperty(id.value)) {
-                        tpl = items[i].attributes[id.value].value;
-                    } else {
-                        tpl = items[i][id.value];
-                    }
-                    var xf = r.syntax.buildFunc(key, tpl);
-                    if (xf) {
-                        value = xf(this, item);
-                    } else {
-                        //如果简单的绑定innerHTML,就不再转为纯文本了
-                        if (id.value === 'innerHTML') {
-                            value = this.util.getValue(key, item);
+                var bs = this.util.getBindToNameList(items[i]);
+                if (bs.length > 0) {
+                    for (var m in bs) {
+                        var attrName = bs[m];
+                        if (items[i].attributes.hasOwnProperty(attrName)) {
+                            tpl = items[i].attributes[attrName].value;
                         } else {
-                            value = this.util.html(this.util.getValue(key, item));
+                            tpl = items[i][attrName];
+                        }
+                        var xf = r.syntax.buildFunc(key, tpl);
+                        if (xf) {
+                            value = xf(this, item);
+                        } else {
+                            //如果简单的绑定innerHTML,就不再转为纯文本了
+                            if (attrName === 'innerHTML') {
+                                value = this.util.getValue(key, item);
+                            } else {
+                                value = this.util.html(this.util.getValue(key, item));
+                            }
                         }
                     }
+
                 } else {
                     //单独处理一下img的data-bind-src
-                    id = items[i].attributes['data-bind-src'];
+                    var id = items[i].attributes['data-bind-src'];
                     if (id) {
                         var xff = r.syntax.buildFunc(key, id.value);
                         if (xff) {
@@ -209,13 +213,15 @@
      */
     u.setValue = function (ele, value) {
         var tag = ele.tagName;
-        var id = ele.attributes['data-bind-to'];
-        if (id) {
-            var attrName = id.value;
-            if (ele.attributes.hasOwnProperty(attrName)) {
-                ele.setAttribute(attrName, value);
-            } else {
-                ele[id.value] = value;
+        var bs = this.getBindToNameList(ele);
+        if (bs.length > 0) {
+            for (var i in bs) {
+                var attrName = bs[i];
+                if (ele.attributes.hasOwnProperty(attrName)) {
+                    ele.setAttribute(attrName, value);
+                } else {
+                    ele[attrName] = value;
+                }
             }
         } else {
             switch (tag) {
@@ -351,6 +357,26 @@
             url += arguments[i] + '=' + encodeURIComponent(arguments[i + 1]) + '&';
         }
         w.location.href = url;
+    };
+    /**
+     * 取绑定名列表，多个绑定名用空格分开
+     * @param item 目标
+     * @returns {Array} 返回绑定名列表
+     */
+    u.getBindToNameList = function (item) {
+        var binds = item.attributes['data-bind-to'];
+        var re = [];
+        if (binds && binds.value) {
+            var sps = binds.value.split(' ');
+            var tmp;
+            for (var i in sps) {
+                tmp = u.trim(sps[i]);
+                if (tmp !== '') {
+                    re.push(tmp);
+                }
+            }
+        }
+        return re;
     };
     /**
      * 显示一个对象
