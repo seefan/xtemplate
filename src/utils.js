@@ -1,8 +1,14 @@
+/**
+ * 常用工具方法集合
+ * @class util
+ */
 (function (w, u) {
     'use strict';
     /**
-     * 清理代码
-     * @param val
+     * 清理代码，主要是清理掉换行和空格
+     *
+     * @method trim
+     * @param val {string} 要清理的内容
      */
     u.trim = function (val) {
         if (typeof(val) == 'string') {
@@ -12,9 +18,11 @@
         }
     };
     /**
-     * 给指定对象设置值
-     * @param ele
-     * @param value
+     * 给指定html网页中对象设置值，目前对img设置src，input设置value，其它设置innerHTML。
+     * 此方法内部用。
+     *
+     * @param ele 对象实例
+     * @param value 值
      */
     u.setValue = function (ele, value) {
         var tag = ele.tagName;
@@ -44,8 +52,9 @@
     };
 
     /**
-     * 过滤html
-     * @param html
+     * 过滤html，清理掉所有的html标签和换行空格
+     *
+     * @param html {string}
      * @returns {string}
      */
     u.html = function (html) {
@@ -58,14 +67,15 @@
     };
     /**
      * 判断变量是否为数组
-     * @param val
-     * @returns {boolean}
+     *
+     * @param val 要判断的变量
+     * @returns {boolean} 是否为数组
      */
     u.isArray = function (val) {
         return toString.apply(val) === "[object Array]";
     };
     /**
-     * 取数组的key全集
+     * 取数组的key全集，内部使用
      * @param key
      * @param data
      * @returns {*}
@@ -98,8 +108,15 @@
     };
     /**
      * 是否有指定串开头
-     * @param str
-     * @param startString
+     *
+     * 示例：
+     *
+     *     startWith('abcdedfs','ab')   输出 true
+     *
+     * @method startWith
+     * @param str {string} 待检查的串
+     * @param startString 指定串
+     * @returns {boolean}
      */
     u.startWith = function (str, startString) {
         if (str && startString && str.length > startString.length && str.substr(0, startString.length) == startString) {
@@ -109,8 +126,10 @@
         }
     };
     /**
-     * 是否为数字
-     * @param chars
+     * 使用正则表示式判断是否为数字格式
+     *
+     * @method isNumber
+     * @param chars {string}待判断有串
      * @returns {boolean}
      */
     u.isNumber = function (chars) {
@@ -119,7 +138,7 @@
     };
 
     /**
-     * 取指定数组的值
+     * 取指定数组的值，内部用
      * @param key
      * @param data
      * @returns {*}
@@ -133,8 +152,7 @@
         return this.getDefaultValue(result);
     };
     /**
-     * 取值
-     * 支持两种数据，简单变量和数组，如果为null或是undefined，自动转为空串
+     * 取值，支持两种数据，简单变量和数组，如果为null或是undefined，自动转为空串。内部用
      * @param val
      * @returns {*}
      */
@@ -147,6 +165,15 @@
     };
     /**
      * 转向一个url，支持多个参数，第一个参数为url地址，后续为参数
+     *
+     * 示例：
+     *
+     *     gotoUrl('index.html','id',1) 跳转到 index.html?id=1
+     *     gotoUrl('index.html?id=1','k','news','c','show') 跳转到 index.html?id=1&k=news&c=show
+     *
+     * @method gotoUrl
+     * @param url {string} 要跳转的url地址
+     * @param ... 多个自由参数，2个一组，第1个为参数名，第2个为值。
      */
     u.gotoUrl = function () {
         var url = '', i = 0;
@@ -164,7 +191,7 @@
         w.location.href = url;
     };
     /**
-     * 取绑定名列表，多个绑定名用空格分开
+     * 取绑定名列表，多个绑定名用空格分开，内部用
      * @param item 目标
      * @returns {Array} 返回绑定名列表
      */
@@ -186,7 +213,9 @@
     /**
      * 显示一个对象
      * 设置style.display=''，同时去掉class中名为hide样式
-     * @param ele
+     *
+     * @method show
+     * @param ele 要显示的对象实例
      */
     u.show = function (ele) {
         if (ele) {
@@ -200,7 +229,8 @@
     };
     /**
      * 取url的所有参数
-     * @returns {{}}
+     * @method getUrlQuery
+     * @returns {object}
      */
     u.getUrlQuery = function () {
         var args = {};

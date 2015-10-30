@@ -7,7 +7,7 @@ module.exports = function (grunt) {
                 separator: ';'
             },
             dist: {
-                src: ['src/render.js','src/utils.js','src/syntax.js','src/funcs.js','src/xtemplate.js'],
+                src: ['src/render.js', 'src/utils.js', 'src/syntax.js', 'src/funcs.js', 'src/xtemplate.js'],
                 dest: 'dist/<%= pkg.name %>.js'
             }
         },
@@ -37,19 +37,37 @@ module.exports = function (grunt) {
 
         watch: {
             files: ['<%= jshint.files %>'],
-            tasks: ['jshint','concat']
+            tasks: ['jshint', 'concat', 'yuidoc', 'copy']
+        },
+        yuidoc: {
+            compile: {
+                "name": "XTemplate",
+                "description": "XTemplate的中文API文档",
+                "logo": "logo.jpg",
+                "options": {
+                    paths: "src",
+                    outdir: "doc"
+                }
+            }
+        },
+        copy: {
+            main: {
+                files: [
+                    {src: ['examples/logo.jpg'], dest: 'doc/logo.jpg'}
+                ]
+            }
         }
     });
 
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-jshint');
-    //grunt.loadNpmTasks('grunt-contrib-qunit');
+    grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-concat');
-
+    grunt.loadNpmTasks("grunt-contrib-yuidoc");
 
     //grunt.registerTask('test', ['jshint', 'qunit']);
 
-    grunt.registerTask('default', ['concat', 'uglify', 'jshint', 'watch']);
+    grunt.registerTask('default', ['concat', 'uglify', 'jshint', 'watch', 'yuidoc', 'copy']);
 
 };

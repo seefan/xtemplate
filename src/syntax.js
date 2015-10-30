@@ -1,7 +1,5 @@
 /**
- * XTemplate 的语法定义
- *
- *
+ * Render 的语法定义
  */
 (function (r) {
     /**

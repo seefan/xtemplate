@@ -2,53 +2,86 @@
  * XTemplate的运行主体，使用对外使用的变量有$scope，当使用bindData时，数量会按名字注入这个变量。
  *
  * 目前支持两种形式的绑定，单变量绑定和数组。
+ *
  * 单变量绑定是以html中name名字为绑定对象，只要名字和绑定的变量同名，即会自动赋值。
  *
- * 例如：<p data-bind='title'></p>
+ * 例如：
+ *
+ *     <p data-bind='title'></p>
+ *
  * 这时如果有一个变量为如下结构{title:'hello world'}，那么，这个name为title的p标签就会显示hello world。
+ *
  * 最终会生成
- * <p name='title'>hello world</p>
+ *
+ *     <p name='title'>hello world</p>
+ *
  * 数组绑定是首先取到一个模板，再把一个数组的内容循环，按模板格式化后返回多行html。
- * 例如：<ul data-repeat-name='listdata'>
+ *
+ * 例如：
+ *
+ *     <ul data-repeat-name='listdata'>
  *          <li>{title}</li>
- *      </ul>
+ *     </ul>
+ *
  * 这里定义了一个名为listdata的模板，ul的内部html将成为可循环的模板，即<li>{title}</li>为待循环的内容
+ *
  * 我们绑定以下变量[{title:'hello 0'},{title:'hello 1'}]
+ *
  * 最终会生成
- * <ul data-repeat-name='listdata'>
+ *
+ *     <ul data-repeat-name='listdata'>
  *          <li>hello 0</li>
  *          <li>hello 1</li>
- *      </ul>
+ *     </ul>
  *
  * 特殊语法：
+ *
+ * !号的使用
+ *
+ * 在模板中使用，例如{!title}，输出title的值，以没有!的区别，这里不会把html进行编码，会输出原始的html。
+ *
  * #号的使用
- * 在模板中使用，例如{#title}，输出title的值，以没有#的区别，这里不会把html进行编码，会输出原始的html。
+ *
  * 在函数名中使用，如果在函数名前加#，则指定这个函数为全局函数，这时这个函数必须是已经定义的好的全局函数或是javascript的内部函数。
  *
  * data-bind-src，主要是给img标签用，作用是将src的值组装好后再绑定，这里避免无效的src。
- * 例如：<img src='/{imgsrc}/abc.jpg'>这个src是无效的，但浏览器会加载这个错误的地址引起一次无效的http请求。
- * 正确的做法是<img data-bind-src='/imgsrc/abc.jsp'>或<img data-bind-src='/imgsrc/abc.jsp' src='默认图'>
+ *
+ * 例如：
+ *
+ *     <img src='/{imgsrc}/abc.jpg'/>
+ *
+ * 这个src是无效的，但浏览器会加载这个错误的地址引起一次无效的http请求。
+ * 正确的做法是
+ *
+ *     <img data-bind-src='/imgsrc/abc.jsp'>或<img data-bind-src='/imgsrc/abc.jsp' src='默认图'/>
  *
  * data-bind-to，是指定绑定的属性名称，同时可以使用模板。如果要绑定多个属性，用空格分开。
- * 例如：<a data-bind='product_id' data-bind-to='href' href='/news/{product_type}/{product_id}/detail.html'>click</a>
- * 在使用bindData时，会将href的内容格式化后重新替换href，以生成一个新的href。
- * 特殊用法，$scope的使用
- * <a data-bind='product_id' data-bind-to='href' href='/news/{$scope.type}/{product_id}/detail.html'>click</a>
- * 如果$scope中有type属性，该值会被带入。
- * 如果其它模板中有与{$scope.type}冲突的，以至于我们取不到正确的模板，那么在前面加一个#来解决
- * {#$scope.type}
  *
- * 函数的使用
- * 目前已经支持了default,case等多个函数。
- * 输出html转义值: {title}
- * 直接输出原始值: {!title}
- * 模板内使用外部变量: {#title}，使用$scope{#$scope.title}，输出$scope的原始值{#!$scope.title}
- * 使用函数处理: {title|default,'空标签'}
- * 多个函数可连续使用: {title|default,'空标签'|left,10}，title输出值默认为空标签，最多输出10个字符
+ * 例如：
+ *
+ *     <a data-bind='product_id' data-bind-to='href' href='/news/{product_type}/{product_id}/detail.html'>click</a>
+ *
+ * 在使用bindData时，会将href的内容格式化后重新替换href，以生成一个新的href。
+ *
+ * 使用全局变量，只要在变量前加上#就不会使用内部变量，而是改为全局变量
+ *
+ * 例如：$scope的使用
+ *
+ *     <a data-bind='product_id' data-bind-to='href' href='/news/{#$scope.type}/{product_id}/detail.html'>click</a>
+ *
+ * 如果$scope中有type属性，该值会被带入。
+ *
+ *
+ * @class render
  */
 (function (w, doc, r) {
     'use strict';
-    //全局变量
+    //
+    /**
+     * 全局变量，绑定到window
+     * @property $scope
+     * @type {object}
+     */
     w.$scope = {};
     //可绑定的key列表
     r.$bindKey = {};
@@ -63,14 +96,19 @@
 
     /**
      * 绑定数据值
-     * @param name 绑定对象的名称，如果不设置时定的key不加绑定名
-     * @param data 要绑定的数据
+     *
      * 当未指定名称时，在绑定时直接使用属性名，例：{key:'key1'}，绑定时只需key即可
      * 当指定名称时，在绑定时需要在属性名前加上指定的名称，例：{key:'key1'}，名称为data1,绑定时需data1.key
      * 绑定的数据会缓存在$scope内
+     *
      * 示例：
-     * bindData('data',{id:1});绑定时用data-bind='data.id'，如<p data-bind='data.id'/>
-     * bindData({id:1});绑定时用id
+     *
+     *     bindData('data',{id:1});绑定时用data-bind='data.id'，如<p data-bind='data.id'/>
+     *     bindData({id:1});绑定时用id，注意此时省略了名称
+     *
+     * @method bindData
+     * @param name 绑定对象的名称，如果不设置时定的key不加绑定名
+     * @param data 要绑定的数据
      */
     r.bindData = function (name, data) {
         if (typeof data == 'undefined') {
@@ -141,6 +179,8 @@
     };
     /**
      * 重新给某个对象绑定新的值，修改后的值不会更新$scope内部缓存的值
+     *
+     * @method bindName
      * @param name 绑定名，用data-bind指定
      * @param value 绑定值
      */
@@ -155,7 +195,14 @@
     };
     /**
      * 循环绑定数据值
-     * @param name 要循环输出的模板范围的名称，默认为data
+     *
+     * 示例：
+     *
+     *     bindRepeatData([{id:1},{id:2}])
+     *     bindRepeatData('news',[{id:1},{id:2}])
+     *
+     * @method bindRepeatData
+     * @param name 要循环输出的模板范围的名称，默认为data，可省略不写
      * @param data 要绑定的数据
      */
     r.bindRepeatData = function (name, data) {
@@ -180,10 +227,16 @@
     /**
      * 如果需要自行扩展Render的函数，请使用本函数。
      * 这些函数可以在html的模板中使用
-     * 增加自定义函数
-     * addFunc('test',function(){
-     *    alert('test');
-     * });
+     *
+     * 示例：
+     *
+     *     addFunc('test',function(){
+     *        alert('test');
+     *     });
+     *
+     * 使用时和内部函数一样，语法为{name|test}
+     *
+     * @method addFunc
      * @param name 函数的名称
      * @param func 函数体
      */
@@ -193,11 +246,17 @@
         }
     };
 })
-(window, document, window.Render = {});;(function (w, u) {
+(window, document, window.Render = {});;/**
+ * 常用工具方法集合
+ * @class util
+ */
+(function (w, u) {
     'use strict';
     /**
-     * 清理代码
-     * @param val
+     * 清理代码，主要是清理掉换行和空格
+     *
+     * @method trim
+     * @param val {string} 要清理的内容
      */
     u.trim = function (val) {
         if (typeof(val) == 'string') {
@@ -207,9 +266,11 @@
         }
     };
     /**
-     * 给指定对象设置值
-     * @param ele
-     * @param value
+     * 给指定html网页中对象设置值，目前对img设置src，input设置value，其它设置innerHTML。
+     * 此方法内部用。
+     *
+     * @param ele 对象实例
+     * @param value 值
      */
     u.setValue = function (ele, value) {
         var tag = ele.tagName;
@@ -239,8 +300,9 @@
     };
 
     /**
-     * 过滤html
-     * @param html
+     * 过滤html，清理掉所有的html标签和换行空格
+     *
+     * @param html {string}
      * @returns {string}
      */
     u.html = function (html) {
@@ -253,14 +315,15 @@
     };
     /**
      * 判断变量是否为数组
-     * @param val
-     * @returns {boolean}
+     *
+     * @param val 要判断的变量
+     * @returns {boolean} 是否为数组
      */
     u.isArray = function (val) {
         return toString.apply(val) === "[object Array]";
     };
     /**
-     * 取数组的key全集
+     * 取数组的key全集，内部使用
      * @param key
      * @param data
      * @returns {*}
@@ -293,8 +356,15 @@
     };
     /**
      * 是否有指定串开头
-     * @param str
-     * @param startString
+     *
+     * 示例：
+     *
+     *     startWith('abcdedfs','ab')   输出 true
+     *
+     * @method startWith
+     * @param str {string} 待检查的串
+     * @param startString 指定串
+     * @returns {boolean}
      */
     u.startWith = function (str, startString) {
         if (str && startString && str.length > startString.length && str.substr(0, startString.length) == startString) {
@@ -304,8 +374,10 @@
         }
     };
     /**
-     * 是否为数字
-     * @param chars
+     * 使用正则表示式判断是否为数字格式
+     *
+     * @method isNumber
+     * @param chars {string}待判断有串
      * @returns {boolean}
      */
     u.isNumber = function (chars) {
@@ -314,7 +386,7 @@
     };
 
     /**
-     * 取指定数组的值
+     * 取指定数组的值，内部用
      * @param key
      * @param data
      * @returns {*}
@@ -328,8 +400,7 @@
         return this.getDefaultValue(result);
     };
     /**
-     * 取值
-     * 支持两种数据，简单变量和数组，如果为null或是undefined，自动转为空串
+     * 取值，支持两种数据，简单变量和数组，如果为null或是undefined，自动转为空串。内部用
      * @param val
      * @returns {*}
      */
@@ -342,6 +413,15 @@
     };
     /**
      * 转向一个url，支持多个参数，第一个参数为url地址，后续为参数
+     *
+     * 示例：
+     *
+     *     gotoUrl('index.html','id',1) 跳转到 index.html?id=1
+     *     gotoUrl('index.html?id=1','k','news','c','show') 跳转到 index.html?id=1&k=news&c=show
+     *
+     * @method gotoUrl
+     * @param url {string} 要跳转的url地址
+     * @param ... 多个自由参数，2个一组，第1个为参数名，第2个为值。
      */
     u.gotoUrl = function () {
         var url = '', i = 0;
@@ -359,7 +439,7 @@
         w.location.href = url;
     };
     /**
-     * 取绑定名列表，多个绑定名用空格分开
+     * 取绑定名列表，多个绑定名用空格分开，内部用
      * @param item 目标
      * @returns {Array} 返回绑定名列表
      */
@@ -381,7 +461,9 @@
     /**
      * 显示一个对象
      * 设置style.display=''，同时去掉class中名为hide样式
-     * @param ele
+     *
+     * @method show
+     * @param ele 要显示的对象实例
      */
     u.show = function (ele) {
         if (ele) {
@@ -395,7 +477,8 @@
     };
     /**
      * 取url的所有参数
-     * @returns {{}}
+     * @method getUrlQuery
+     * @returns {object}
      */
     u.getUrlQuery = function () {
         var args = {};
@@ -428,9 +511,7 @@
         return args;
     };
 })(window, window.Render.util);;/**
- * XTemplate 的语法定义
- *
- *
+ * Render 的语法定义
  */
 (function (r) {
     /**
@@ -738,18 +819,24 @@
     };
 })(window.Render);;/**
  * XTemplate 所有的扩展函数集合，用于处理html中常见的格式转换，默认值等处理。
- *
  * 如果需要自行扩展，请使用window.Render的addFunc函数
+ *
+ * @class funcs
  */
 (function (r) {
     'use strict';
     var f = window.Render.funcs;
     /**
      * 指定输出的默认值，如果有值就原样输出，如果空或是null，就输出默认值。
-     * 示例：{name|default,'小明'}
-     * @param val 变量名
+     *
+     * 示例：
+     *
+     *     {name|default,'小明'}
+     *
+     * @method default
+     * @param val {string} 变量名
      * @param defaultVal 默认值
-     * @returns {*}
+     * @returns {object}
      */
     f.default = function (val, defaultVal) {
         if (typeof(val) == 'undefined' || val === '' || val === 'null') {
@@ -759,10 +846,16 @@
     };
     /**
      * 根据设定值返回指定内容
-     * 示例：{status|case,-1,'审核不通过',1,'审核通过','待审核'}
+     *
+     * 示例：
+     *
+     *     {status|case,-1,'审核不通过',1,'审核通过','待审核'}
+     *     {status|case,-1,'审核不通过',1,'审核通过',2,'VIP','待审核'}
+     *
      * 参数说明：参数成对出现，第一个是设定值，第二是要返回的值；后续可以增加多个成队的参数；最后一个参数为默认值，所有设定值都不满足时输出
-     * @param val 变量名
-     * @returns {*}
+     * @method case
+     * @param val {string} 变量名
+     * @returns {object}
      */
     f.case = function (val) {
         for (var i = 1; i < arguments.length; i += 2) {
@@ -773,9 +866,16 @@
         return arguments[arguments.length - 1];
     };
     /**
-     * 格式化货币
-     * @param val 变量名
-     * @returns {Number}
+     * 格式化货币，最少小数显示，
+     * 示例：
+     *
+     *     {price|format_money}
+     *     如果price为10.0100，显示10.01
+     *     如果price为10.000，显示10
+     *
+     * @method format_money
+     * @param val {string} 变量名
+     * @returns {number}
      */
     f.format_money = function (val) {
         return parseFloat(val);
@@ -786,11 +886,16 @@
      * 将 Date 转化为指定格式的String
      * 月(M)、日(d)、小时(h)、分(m)、秒(s)、季度(q) 可以用 1-2 个占位符，
      * 年(y)可以用 1-4 个占位符，毫秒(S)只能用 1 个占位符(是 1-3 位的数字)
-     * 例子：
-     * {date|format_date,"yyyy-MM-dd hh:mm:ss.S"} ==> 2006-07-02 08:09:04.423
-     * {date|format_date,"yyyy-M-d h:m:s.S"}      ==> 2006-7-2 8:9:4.18
-     * @param val 变量名
-     * @param fmt 格式串
+     * 示例：
+     *
+     *     {date|format_date,"yyyy-MM-dd hh:mm:ss.S"}   输出  2006-07-02 08:09:04.423
+     *     {date|format_date,"yyyy-M-d h:m:s.S"}    输出  2006-7-2 8:9:4.18
+     *     {date|format_date,"yyyy-M-d h:m:s"}    输出  2006-7-2 8:9:4
+     *
+     * @method format_data
+     * @param val {string} 变量名
+     * @param fmt {string} 格式串
+     * @returns {string} 格式化后的日期串
      */
     f.format_date = function (val, fmt) {
         if (typeof(val) != 'object') {
@@ -818,49 +923,64 @@
     };
     /**
      * 数字保留小数位数
-     * 示例：{float_num|fixed,2}
-     * @param num 要格式的小数
-     * @param c 保留的小数位置，默认为0
-     * @returns {string}
+     * 示例：
+     *
+     *     {float_num|fixed,2}
+     *
+     * @method fixed
+     * @param val {string} 要格式的变量名
+     * @param c {number} 保留的小数位置，默认为0
+     * @returns {number}
      */
-    f.fixed = function (num, c) {
+    f.fixed = function (val, c) {
         if (typeof c == 'undefined') {
             c = 0;
         }
-        if (num) {
-            return num.toFixed(c);
+        if (typeof(val) == 'number') {
+            return val.toFixed(c);
         } else {
-            return '';
+            return val;
         }
     };
     /**
      * 没有正确的函数处理时，用此函数处理，直接输出变量值
      * 外部不要使用
-     * @param val 变量名
-     * @returns {*}
+     * @param val {string} 变量名
+     * @returns {string}
      */
     f.noFunc = function (val) {
         return val;
     };
     /**
      * 重复输出num次val
-     * {num|repeat,'*'}，当num=4时，输出****
-     * @param num 重复次数
-     * @param val 要重复的内容
+     *
+     * 示例：
+     *
+     *     {num|repeat,'*'}，当num=4时，输出****
+     *
+     * @method repeat
+     * @param val {string} 重复次数
+     * @param res {string}要重复的内容
      * @returns {string}
      */
-    f.repeat = function (num, val) {
+    f.repeat = function (val, res) {
         var result = '';
-        for (var i = 0; i < num; i++) {
-            result += val;
+        for (var i = 0; i < val; i++) {
+            result += res;
         }
         return result;
     };
     /**
      * 内部实现简单的循环，注意，内部模板和普通模板有区别，需要使用小括号代替大扩号。
-     * 示例：{array|range,'(id),'}，如果array=[{id:0},{id:1}]，会输出0,1,
-     * @param list 要循环的数组
-     * @param tmpl 模板
+     * 常用于嵌套循环显示。
+     *
+     * 示例：
+     *
+     *      {array|range,'(id),'}，如果array=[{id:0},{id:1}]，会输出0,1,
+     *
+     * @method range
+     * @param list {string} 要循环的数组变量名
+     * @param tmpl {string} 模板
      * @returns {string} 输出的html
      */
     f.range = function (list, tmpl) {
@@ -878,20 +998,30 @@
     };
     /**
      * 过滤html字符，因为系统默认已过滤html，所以此函数一般外部不使用
-     * @param html 待过滤的html代码
-     * 示例：{code|filter_html}
-     * @returns {string|*}
+     *
+     * 示例：
+     *
+     *     {code|filter_html}
+     *
+     * @method filter_html
+     * @param html {string} 待过滤的html代码
+     * @returns {string}
      */
     f.filter_html = function (html) {
         return r.util.html(html);
     };
     /**
      * 从左侧按指定长度截断字串，注意一个汉字按2个字符计算，这样可以准确的控制格式
-     * 示例：{str|left,20,'...'}
-     * 示例：{str|left,20}
-     * @param str 要截断的字串
-     * @param len 截断后的字串长度，一个汉字按2个字符计算
-     * @param dot 可选，截断后补充的串，示例:"..."
+     *
+     * 示例：
+     *
+     *     {str|left,20,'...'}
+     *     {str|left,20}
+     *
+     * @method left
+     * @param str {string} 要截断的字串变量名
+     * @param len {number} 截断后的字串长度，一个汉字按2个字符计算
+     * @param dot {string} [可选] 截断后补充的串，示例:"..."
      * @returns {string}
      */
     f.left = function (str, len, dot) {
@@ -921,7 +1051,11 @@
         }
         return newStr;
     };
-})(window.Render);;(function (d, w, x) {
+})(window.Render);;/**
+ * XTemplate，简单快速的将json数据绑定到html上
+ * @class XTemplate
+ */
+(function (d, w, x) {
     'use strict';
     var r = w.Render;
     //是否已初始化
@@ -958,31 +1092,105 @@
     };
     /**
      * 取url的参数，并可以指定默认值
-     * @param key 参数名
-     * @poaram defaultValue 默认值，可选
+     *
+     * 示例：
+     *
+     * 1. query('id')，取url参数中的id的值
+     * 2. query('id',10)，取url参数中的id的值，如果id为空值，就返回默认值10
+     *
+     * @method query
+     * @param key {string} 参数名
+     * @param defaultValue [可选] 默认值
      */
     x.query = function (key, defaultValue) {
         if (!w.query_args) {
             w.query_args = r.util.getUrlQuery();
         }
         var tmp = w.query_args[key];
-        if (!tmp) {
+        if (typeof tmp == 'undefined' || tmp === '') {
             return defaultValue;
         }
         return tmp;
     };
-    //绑定工具
+
+    /**
+     * 将util工具组合引入XTemplate，方便后续使用。具体内容见{{#crossLink "util"}}{{/crossLink}}。
+     * @property util
+     * @type {Object}
+     */
     x.util = r.util;
     /**
-     * 使用ajax加载数据，可选的绑定到页面
-     * @param id 绑定的id
-     * @param postUrl       请求数据的url
-     * @param param         请求的参数，可为空
-     * @param backdata      数据处理方法，如果请求的数据正常，就返回可以绑定的数据；如果出错就返回false，将不执行绑定。
-     * @param callback      请求成功的回调方法，可为空
-     * @param errorback     请求失败的回调方法，可为空
+     * 使用ajax加载数据，可选的绑定到页面。
+     * 支持2类数据，Object和Array。
+     *
+     * Object为简单绑定，页面中在需要绑定数据的地方用data-bind指定属性名。
+     * 当绑定id为空串时，在绑定时直接使用属性名，例：{key:'key1'}，绑定时只需key即可。
+     *
+     * 示例：
+     *
+     *     <p data-bind='key'></p>
+     *
+     * 当指定绑定id时，在绑定时需要在属性名前加上指定的名称，例：{key:'key1'}，名称为data1,绑定时需data1.key
+     *
+     * 示例：
+     *
+     *     <p data-bind='data1.key'></p>
+     *
+     *
+     * Array为循环绑定，常用于输出列表，页面中用data-repeat-name指定绑定名。
+     * 在使用data-repeat-name后，该节点内部的html内容将成为模板，循环绑定后显示。
+     *
+     * 示例：
+     *
+     *     <ul data-repeat-name='data'>
+     *         <li>{key}</li>
+     *     </ul>
+     *
+     * 如果Array的内容为[{key:'key1'},{key:'key2'},{key:'key3'}]，输出内容为
+     *
+     *     <ul data-repeat-name='data'>
+     *         <li>key1</li>
+     *         <li>key2</li>
+     *         <li>key3</li>
+     *     </ul>
+     *
+     * @method load
+     * @param  id {string} 绑定id，在html页面中指定
+     * @param  postUrl {string} url地址，该地址返回一段json数据
+     * @param param 请求的参数，可为空。如果为空是自动使用当前页面地址的query参数
+     *
+     * 示例：如果当前页面的地址为show.html?id=132，param为''时，系统会将param修改为{id:132}，内容与当前页的参数一致。
+     *
+     * @param dataFilter {Function} 数据过滤方法，如果请求的数据正常，就返回可以绑定的数据；如果返回false，将不执行绑定。
+     *
+     * 示例：其中e为从postUrl中取得的json数据
+     *
+     *     function(e){
+     *        if(e.error==0){
+     *            return e.data;
+     *        }else{
+     *            return false;
+     *        }
+     *     }
+     *
+     * @param callback {Function} [可选] 请求成功的回调方法
+     *
+     * 示例：其中e为从postUrl中取得的json数据
+     *
+     *      function(e){
+     *          alert('ok');
+     *      }
+     *
+     * @param errorback {Function} [可选] 请求失败的回调方法
+     *
+     * 示例：
+     *
+     *     function(){
+     *          alert('error');
+     *     }
+     *
      */
-    x.load = function (id, postUrl, param, backdata, callback, errorback) {
+    x.load = function (id, postUrl, param, dataFilter, callback, errorback) {
         var opt = {};
         opt.url = postUrl;
         opt.data = param;
@@ -1008,8 +1216,8 @@
                     ok = false;
                 }
             }
-            if (ok && backdata) {
-                data = backdata(data);
+            if (ok && dataFilter) {
+                data = dataFilter(data);
                 if (!data) {
                     ok = false;
                 }
@@ -1038,8 +1246,9 @@
         }
     };
     /**
-     * 设置ajax类，默认为jquery
-     * @param ajax
+     * 设置ajax类，默认为jQuery
+     * @method setAjax
+     * @param ajax ajax工具类
      */
     x.setAjax = function (ajax) {
         this.optAjax = ajax;
