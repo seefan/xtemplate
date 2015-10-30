@@ -61,7 +61,7 @@
     };
 
     /**
-     * 将util工具组合引入XTemplate，方便后续使用。具体内容见{{#crossLink "util"}}{{/crossLink}}。
+     * 将Render.util工具函数集合引入XTemplate，方便后续使用。具体内容见{{#crossLink "Render.util"}}{{/crossLink}}。
      * @property util
      * @type {Object}
      */

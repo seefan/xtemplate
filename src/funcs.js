@@ -2,7 +2,7 @@
  * XTemplate 所有的扩展函数集合，用于处理html中常见的格式转换，默认值等处理。
  * 如果需要自行扩展，请使用window.Render的addFunc函数
  *
- * @class funcs
+ * @class Render.funcs
  */
 (function (r) {
     'use strict';

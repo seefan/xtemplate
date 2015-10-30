@@ -72,7 +72,7 @@
  * 如果$scope中有type属性，该值会被带入。
  *
  *
- * @class render
+ * @class Render
  */
 (function (w, doc, r) {
     'use strict';

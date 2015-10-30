@@ -1,6 +1,6 @@
 /**
  * 常用工具方法集合
- * @class util
+ * @class Render.util
  */
 (function (w, u) {
     'use strict';
