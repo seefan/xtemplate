@@ -56,6 +56,15 @@ module.exports = function (grunt) {
                     {src: ['examples/logo.jpg'], dest: 'doc/logo.jpg'}
                 ]
             }
+        }, ftpscript: {
+            main: {
+                options: {
+                    host: 'www.seefan.net'
+                },
+                files: [
+                    {expand: true, cwd: 'filesToCopy', src: ['doc/*'], dest: '/htdocs/doc'}
+                ]
+            }
         }
     });
 
@@ -65,9 +74,9 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks("grunt-contrib-yuidoc");
-
+    grunt.loadNpmTasks("grunt-ftpscript");
     //grunt.registerTask('test', ['jshint', 'qunit']);
 
-    grunt.registerTask('default', ['concat', 'uglify', 'jshint', 'watch', 'yuidoc', 'copy']);
+    grunt.registerTask('default', ['concat', 'uglify', 'jshint', 'watch', 'yuidoc', 'copy', 'ftpscript']);
 
 };

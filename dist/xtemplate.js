@@ -72,7 +72,7 @@
  * 如果$scope中有type属性，该值会被带入。
  *
  *
- * @class render
+ * @class Render
  */
 (function (w, doc, r) {
     'use strict';
@@ -248,7 +248,7 @@
 })
 (window, document, window.Render = {});;/**
  * 常用工具方法集合
- * @class util
+ * @class Render.util
  */
 (function (w, u) {
     'use strict';
@@ -821,7 +821,7 @@
  * XTemplate 所有的扩展函数集合，用于处理html中常见的格式转换，默认值等处理。
  * 如果需要自行扩展，请使用window.Render的addFunc函数
  *
- * @class funcs
+ * @class Render.funcs
  */
 (function (r) {
     'use strict';
@@ -1114,7 +1114,7 @@
     };
 
     /**
-     * 将util工具组合引入XTemplate，方便后续使用。具体内容见{{#crossLink "util"}}{{/crossLink}}。
+     * 将Render.util工具函数集合引入XTemplate，方便后续使用。具体内容见{{#crossLink "Render.util"}}{{/crossLink}}。
      * @property util
      * @type {Object}
      */
