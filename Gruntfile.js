@@ -59,10 +59,10 @@ module.exports = function (grunt) {
         }, ftpscript: {
             main: {
                 options: {
-                    host: 'www.seefan.net'
+                    host: 'qxu1142020235.my3w.com'
                 },
                 files: [
-                    {expand: true, cwd: 'filesToCopy', src: ['doc/*'], dest: '/htdocs/doc'}
+                    {cwd: 'filesToCopy', src: ['doc'], dest: '/htdocs/doc'}
                 ]
             }
         }
