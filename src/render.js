@@ -1,9 +1,12 @@
 /**
- * XTemplate的运行主体，使用对外使用的变量有$scope，当使用bindData时，数量会按名字注入这个变量。
+ * XTemplate的运行主体，对外使用的变量有$scope，当使用bindData时，变量会按绑定名字注入这个变量。
  *
  * 目前支持两种形式的绑定，单变量绑定和数组。
  *
- * 单变量绑定是以html中name名字为绑定对象，只要名字和绑定的变量同名，即会自动赋值。
+ * 单变量绑定
+ * =============
+ *
+ * 是以html中data-bind标记为绑定对象，只要data-bind的内容和绑定的变量同名，即会自动赋值。
  *
  * 例如：
  *
@@ -13,17 +16,84 @@
  *
  * 最终会生成
  *
- *     <p name='title'>hello world</p>
+ *     <p data-bind='title'>hello world</p>
  *
- * 数组绑定是首先取到一个模板，再把一个数组的内容循环，按模板格式化后返回多行html。
+ *
+ * 使用方法参见示例：
+ *
+ * 1.普通绑定：输出到p的默认内容中，此处为innerHTML属性。一般img将输出到src，input输出到value，其它输出到innerHTML。
+ *
+ *     <p data-bind="content"></p>
+ *
+ * 2.模板输出：
+ *
+ *     <p data-bind="content"><b>{content|default,'没有内容显示'}</b></p>
+ *
+ *     content的内容会以内部html为模板绑定后显示
+ *
+ *     如果content为空，最终输出
+ *
+ *     <p data-bind="content"><b>没有内容显示</b></p>
+ *
+ *     如果刚开始不想显示出模板的内容，可以将p设置为隐藏
+ *
+ *     <p style="display:none" data-bind="content"><b>{content|default,'没有内容显示'}</b></p>
+ *
+ *     或
+ *
+ *     <p class="hide" data-bind="content"><b>{content|default,'没有内容显示'}</b></p>
+ *
+ *     绑定后style.display将被重置为空，css中的hide也会被移除。
+ *
+ * 3.原始值按html输出：
+ *
+ *     <p data-bind="content" data-bind-to="innerHTML"></p>
+ *     或
+ *     <p data-bind="content" data-bind-to="innerHTML">{!content}</p>
+ *     第1种为简写，第2种为data-bind-to的标准写法
+ *
+ * 4.data-bind-to使用：
+ *
+ *     <b data-bind="market_product_id" data-bind-to="title" title="{!content}">title</b>
+ *     data-bind-to指定了输出的属性，所以将绑定的内容将按data-bind-to进行绑定。此处data-bind-to为title，
+ *     待绑定的属性内容要使用模板。
+ *     所以XTemplate将会把market_product_id的值绑定到title属性上。
+ *     此处模板内content前有个叹号“！”，代表输出原始值，不进行html转义。
+ *
+ * 5.img的src绑定：
+ *
+ *     <img data-bind="thumb"/>
+ *     最终输出<img data-bind="thumb" src="图片地址"/>
+ *
+ *     指定img的默认显示图片，直接使用原来的src指定默认图
+ *     <img data-bind="imgsrc" data-bind-src='/{imgsrc}/abc.jpg' src='默认图'/>
+ *
+ *     如果img的地址比较复杂，是组合而成，或是需要用函数，可以使用data-bind-src来指定src的模板。
+ *     <img data-bind="thumb" data-bind-src="{thumb1|default,'logo.jpg'}"/>
+ *
+ *     注意不要用src属性！！！
+ *
+ *     不使用data-bind-to指定src，是因为如果指定img的src，将会使浏览器多产生一个无效的http请求，影响加载效果。
+ *
+ *     错误的例子：<img data-bind="thumb" data-bind-to="src" src='/{imgsrc}/abc.jpg'>
+ *     /{imgsrc}/abc.jpg这个地址是不存在的地方，所以会引起一个错误的http请求。
+ *
+ *
+ * 数组绑定
+ * =============
+ * 数组绑定是指定一个模板，并把数组的内容循环，按模板格式化后返回多行html。
  *
  * 例如：
  *
- *     <ul data-repeat-name='listdata'>
+ *      <ul data-repeat-name='listdata'>
  *          <li>{title}</li>
- *     </ul>
+ *      </ul>
  *
- * 这里定义了一个名为listdata的模板，ul的内部html将成为可循环的模板，即<li>{title}</li>为待循环的内容
+ * 这里定义了一个名为listdata的模板，ul的内部html将成为可循环的模板，即
+ *
+ *      <li>{title}</li>
+ *
+ * 为待循环的内容
  *
  * 我们绑定以下变量[{title:'hello 0'},{title:'hello 1'}]
  *
@@ -34,7 +104,95 @@
  *          <li>hello 1</li>
  *     </ul>
  *
+ * 使用方法参见示例：
+ *
+ * 1.普通输出：
+ *
+ *      <ul data-repeat-name='data'>
+ *          <li>{market_product_id}:{product_name}</li>
+ *      </ul>
+ *
+ * 2.img的src绑定：
+ *
+ *      <ul data-repeat-name='data'>
+ *          <li><img data-bind-src='{thumb}'/>{market_product_id}:{!content}</li>
+ *      </ul>
+ *
+ *      这里与单变量绑定不同的是没有使用data-bind指定绑定的属性，其它使用方法完全一致。
+ *
+ * 模板的使用
+ * =============
+ *
+ * 模板的基本语法是{模板内容}，两端以大括号包围，中间为模板的内容。
+ *
+ * 如：{username}，即输出变量username的内容。
+ *
+ * 模板可以在循环的模板中使用，也可以在待绑定属性中使用，也可以在data-bind-src中使用。
+ *
+ * 使用方法参见示例：
+ *
+ * 1.使用内部函数处理输出结果：
+ *
+ *
+ *     {market_product_num|repeat,'*'}//最终输出market_product_num个*，{{#crossLink "Render.funcs/repeat:method"}}{{/crossLink}}为内部函数
+ *
+ *     语法为：[属性名]|[函数]|[函数]
+ *     属性名后竖线"|"连接函数名，当前的属性必须为函数的第1个参数。
+ *     多个函数时依次用竖线连接，前一个函数作为后一个函数的第一个变量输入。
+ *
+ *     如：{user_money|format_money}，其中user_money为绑定属性名，{{#crossLink "Render.funcs/format_money:method"}}{{/crossLink}}为内部函数名，主要作用为格式化货币。
+ *
+ *     如果函数有多个参数，使用逗号连接。
+ *
+ *
+ * 2.使用外部函数处理输出结果：
+ *
+ *     {market_product_id|#hello,':)'}
+ *
+ *     函数名前加了#号，代表使用外部函数，此处使用了hello，该函数使用前一定要定义。
+ *
+ *     此处market_product_id的值会传给s变量，即第1个变量。
+ *
+ *     示例1：
+ *
+ *     function hello(s){
+ *         return s+' hello';
+ *     }
+ *
+ *     示例2：
+ *     function hello(s,v){
+ *         return s+'hello'+v;
+ *     }
+ *
+ *
+ * 3.使用多个函数处理输出结果：
+ *
+ *     {market_product_id|repeat,'@@'|#hello,':)'}
+ *
+ *     用|连接即可。
+ *
+ * 4.使用外部变量：
+ *
+ *     {id}={#out_abc}
+ *
+ *     变量前加#
+ *
+ * 5.进行简单的运算：
+ *
+ *     {market_product_id * 3 + 12}
+ *
+ *     在模板中，属性名支持简单的加减乘除运算，复杂的请使用自定义函数处理。
+ *
+ * 6.在模板中处理子循环：
+ *
+ *     {list|range,'ID:(id)&nbsp; '}
+ *
+ *     使用内部函数range，参数为模板内容。但为了区分子模板和主模板，子模板使用小括号“()”代替大括号。
+ *
+ *
+ *
  * 特殊语法：
+ * =============
  *
  * !号的使用
  *
@@ -42,34 +200,9 @@
  *
  * #号的使用
  *
- * 在函数名中使用，如果在函数名前加#，则指定这个函数为全局函数，这时这个函数必须是已经定义的好的全局函数或是javascript的内部函数。
+ * 在函数名中使用，如果在函数名前加#，则指定这个函数为全局函数，这时这个函数必须是已经定义好的全局函数或是javascript的内部函数。
+ * 在变量名中使用，如果果变量名前加#，则指定这个变量为全局变量，这时这个变量必须是已经定义好的全局变量。
  *
- * data-bind-src，主要是给img标签用，作用是将src的值组装好后再绑定，这里避免无效的src。
- *
- * 例如：
- *
- *     <img src='/{imgsrc}/abc.jpg'/>
- *
- * 这个src是无效的，但浏览器会加载这个错误的地址引起一次无效的http请求。
- * 正确的做法是
- *
- *     <img data-bind-src='/imgsrc/abc.jsp'>或<img data-bind-src='/imgsrc/abc.jsp' src='默认图'/>
- *
- * data-bind-to，是指定绑定的属性名称，同时可以使用模板。如果要绑定多个属性，用空格分开。
- *
- * 例如：
- *
- *     <a data-bind='product_id' data-bind-to='href' href='/news/{product_type}/{product_id}/detail.html'>click</a>
- *
- * 在使用bindData时，会将href的内容格式化后重新替换href，以生成一个新的href。
- *
- * 使用全局变量，只要在变量前加上#就不会使用内部变量，而是改为全局变量
- *
- * 例如：$scope的使用
- *
- *     <a data-bind='product_id' data-bind-to='href' href='/news/{#$scope.type}/{product_id}/detail.html'>click</a>
- *
- * 如果$scope中有type属性，该值会被带入。
  *
  *
  * @class Render
@@ -135,7 +268,7 @@
             var value, tpl;
             for (i = 0; i < items.length; i++) {
                 value = '';
-                var bs = this.util.getBindToNameList(items[i]);
+                var bs = this.util.getBindToNameList(items[i]);//data-bind-to
                 if (bs.length > 0) {
                     for (var m in bs) {
                         var attrName = bs[m];
@@ -158,10 +291,9 @@
                     }
 
                 } else {
-                    //单独处理一下img的data-bind-src
-                    var id = items[i].attributes['data-bind-src'];
-                    if (id) {
-                        var xff = r.syntax.buildFunc(key, id.value);
+                    //单独处理一下img的data-bind-src，使用模板
+                    if (items[i].tagName == 'IMG' && items[i].attributes.hasOwnProperty('data-bind-src')) {
+                        var xff = r.syntax.buildFunc(key, items[i].attributes['data-bind-src'].value);
                         if (xff) {
                             value = xff(this, item);
                         } else {
