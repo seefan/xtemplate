@@ -25,40 +25,42 @@
  *
  *     <p data-bind="content"></p>
  *
- * 2.模板输出：
- *
- *     <p data-bind="content"><b>{content|default,'没有内容显示'}</b></p>
- *
- *     content的内容会以内部html为模板绑定后显示
- *
- *     如果content为空，最终输出
- *
- *     <p data-bind="content"><b>没有内容显示</b></p>
- *
- *     如果刚开始不想显示出模板的内容，可以将p设置为隐藏
- *
- *     <p style="display:none" data-bind="content"><b>{content|default,'没有内容显示'}</b></p>
- *
- *     或
- *
- *     <p class="hide" data-bind="content"><b>{content|default,'没有内容显示'}</b></p>
- *
- *     绑定后style.display将被重置为空，css中的hide也会被移除。
- *
- * 3.原始值按html输出：
+ * 2.原始值按html输出：
  *
  *     <p data-bind="content" data-bind-to="innerHTML"></p>
  *     或
  *     <p data-bind="content" data-bind-to="innerHTML">{!content}</p>
  *     第1种为简写，第2种为data-bind-to的标准写法
  *
- * 4.data-bind-to使用：
+ *
+ * 3.data-bind-to使用：
  *
  *     <b data-bind="market_product_id" data-bind-to="title" title="{!content}">title</b>
+ *
  *     data-bind-to指定了输出的属性，所以将绑定的内容将按data-bind-to进行绑定。此处data-bind-to为title，
  *     待绑定的属性内容要使用模板。
  *     所以XTemplate将会把market_product_id的值绑定到title属性上。
  *     此处模板内content前有个叹号“！”，代表输出原始值，不进行html转义。
+ *
+ * 4.模板输出：必须使用data-bind-to指定属性名，默认的输出属性值不会当作模板。
+ *
+ *     <p data-bind="content" data-bind-to="innerHTML"><b>{content|default,'没有内容显示'}</b></p>
+ *
+ *     content的内容会以内部html为模板绑定后显示
+ *
+ *     如果content为空，最终输出
+ *
+ *     <p data-bind="content" data-bind-to="innerHTML"><b>没有内容显示</b></p>
+ *
+ *     如果刚开始不想显示出模板的内容，可以将p设置为隐藏
+ *
+ *     <p style="display:none" data-bind-to="innerHTML" data-bind="content"><b>{content|default,'没有内容显示'}</b></p>
+ *
+ *     或
+ *
+ *     <p class="hide" data-bind-to="innerHTML" data-bind="content"><b>{content|default,'没有内容显示'}</b></p>
+ *
+ *     绑定后style.display将被重置为空，css中的hide也会被移除。
  *
  * 5.img的src绑定：
  *
