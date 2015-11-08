@@ -73,7 +73,7 @@
      *     {date|format_date,"yyyy-M-d h:m:s.S"}    输出  2006-7-2 8:9:4.18
      *     {date|format_date,"yyyy-M-d h:m:s"}    输出  2006-7-2 8:9:4
      *
-     * @method format_data
+     * @method format_date
      * @param val {string} 变量名
      * @param fmt {string} 格式串
      * @returns {string} 格式化后的日期串
