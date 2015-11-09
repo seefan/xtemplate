@@ -89,14 +89,17 @@
             case 'boolean':
                 return [key];
             case 'object':
-                if (this.isArray(value)) {
+                if (u.isArray(value)) {
                     return [key];
                 } else {
                     var names = [];
                     for (var k in value) {
-                        var tkv = this.getName(k, value);
-                        for (var i = 0; i < tkv.length; i++) {
-                            names.push(key + '.' + tkv[i]);
+                        //跳过非属性
+                        if (value.hasOwnProperty(k)) {
+                            var tkv = u.getName(k, value);
+                            for (var i = 0; i < tkv.length; i++) {
+                                names.push(key + '.' + tkv[i]);
+                            }
                         }
                     }
                     return names;

@@ -471,14 +471,17 @@
             case 'boolean':
                 return [key];
             case 'object':
-                if (this.isArray(value)) {
+                if (u.isArray(value)) {
                     return [key];
                 } else {
                     var names = [];
                     for (var k in value) {
-                        var tkv = this.getName(k, value);
-                        for (var i = 0; i < tkv.length; i++) {
-                            names.push(key + '.' + tkv[i]);
+                        //跳过非属性
+                        if (value.hasOwnProperty(k)) {
+                            var tkv = u.getName(k, value);
+                            for (var i = 0; i < tkv.length; i++) {
+                                names.push(key + '.' + tkv[i]);
+                            }
                         }
                     }
                     return names;
@@ -1388,13 +1391,12 @@
         this.optAjax = ajax;
     };
     //开始初始化将执行ready方法
-    if (d.readyState === 'complete') {
+    if (/complete|loaded|interactive/.test(document.readyState) && document.body) {
         x.init();
-    } else {
-        d.onreadystatechange = function () {
-            if (d.readyState === 'complete') {
-                x.init();
-            }
-        };
+    }
+    else {
+        document.addEventListener('DOMContentLoaded', function () {
+            x.init();
+        }, false);
     }
 })(document, window, window.XTemplate = {});

@@ -201,13 +201,12 @@
         this.optAjax = ajax;
     };
     //开始初始化将执行ready方法
-    if (d.readyState === 'complete') {
+    if (/complete|loaded|interactive/.test(document.readyState) && document.body) {
         x.init();
-    } else {
-        d.onreadystatechange = function () {
-            if (d.readyState === 'complete') {
-                x.init();
-            }
-        };
+    }
+    else {
+        document.addEventListener('DOMContentLoaded', function () {
+            x.init();
+        }, false);
     }
 })(document, window, window.XTemplate = {});
