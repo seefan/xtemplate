@@ -130,7 +130,7 @@
      * @returns {string}
      */
     f.noFunc = function (val) {
-        return val;
+        return '没有找到正确的处理函数';
     };
     /**
      * 重复输出num次val

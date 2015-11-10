@@ -251,11 +251,7 @@
     r.init = function (document) {
         var items = document.querySelectorAll('[data-repeat-name]');
         for (var i = 0; i < items.length; i++) {
-            var item = items[i];
-            var id = item.attributes['data-repeat-name'];
-            if (id) {
-                r.syntax.initRepeat(item, id.value);
-            }
+            r.syntax.initRepeat(items[i], items[i].attributes['data-repeat-name'].value);
         }
     };
     /**
