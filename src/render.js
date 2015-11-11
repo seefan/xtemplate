@@ -246,14 +246,14 @@
      * @param data 要绑定的数据
      */
     r.bindData = function (name, data) {
-        if (typeof data == 'undefined') {
+        if (typeof data === 'undefined') {
             data = name;
             name = '__data';
         }
         w.$scope[name] = data;
         this.$bindKey[name] = [];
-        var i = 0;
-        for (var tkey in data) {
+        var i = 0, tkey;
+        for (tkey in data) {
             var k = this.util.getName(tkey, data);
             for (i = 0; i < k.length; i++) {
                 this.$bindKey[name].push(k[i]);
@@ -319,7 +319,7 @@
      * @param value 绑定值
      */
     r.bindName = function (name, value) {
-        var items = doc.querySelectorAll('[data-bind=' + key + ']');
+        var items = doc.querySelectorAll('[data-bind="' + name + '"]');
         if (items) {
             for (var i = 0; i < items.length; i++) {
                 this.util.setValue(items[i], value);
