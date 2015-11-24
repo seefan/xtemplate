@@ -1,0 +1,67 @@
+<html>
+<head>
+    <title>单变量绑定</title>
+    <script src="../dist/xtemplate.js"></script>
+
+    <meta charset="utf-8">
+</head>
+<body>
+<ul>
+    <li>普通绑定：<p data-bind="content"></p></li>
+    <li>模板输出：<a data-bind="market_product_id" data-bind-to="href"
+                href="{market_product_id}/{product_name}/show.html">test</a></li>
+    <li>原始值按html输出：<p data-bind="content" data-bind-to="innerHTML"></p></li>
+    <li>原始值的模板输出：<b data-bind="market_product_id" data-bind-to="title" title="{!content}">title</b></li>
+    <li>img的src绑定：<img data-bind="thumb"></p></li>
+    <li>img的复杂src绑定：<img data-bind="thumb" data-bind-src="{thumb1|default,'logo.jpg'}"></p>
+        ，这里不使用data-bind-to指定src，是因为如果使用了模板的src，将会使浏览器产生一个无效的http请求。
+    </li>
+    <li>使用内部函数处理输出结果：<p data-bind="product_name" data-bind-to="innerHTML">
+        {market_product_id|repeat,':)'}/{product_name}/show.html
+
+        <p/>用|分开，直接跟函数名，如果函数有多个参数，那么前面的变量为第一个变量
+    </li>
+
+    <li>使用外部函数处理输出结果：<p data-bind="product_name" data-bind-to="innerHTML">
+        {market_product_id|#hello,':)'}/{product_name}/show.html
+
+        <p/>函数名前加了#号
+    </li>
+    <li>使用多个函数处理输出结果：<p data-bind="product_name" data-bind-to="innerHTML">
+        {market_product_id|repeat,'@@'|#hello,':)'}/{product_name}/show.html
+
+        <p/>用|连接即可。
+    </li>
+
+    <li>使用外部变量：<p data-bind="id" data-bind-to="innerHTML">
+        {id}={#out_abc}</p>
+
+        <p/>变量前加#
+    </li>
+    <li>进行简单的运算：<p data-bind="product_name" data-bind-to="innerHTML">
+        {market_product_id * 3 + 12}/{product_name}/show.html
+
+        <p/>用|连接即可。
+    </li>
+    <li>多数据源绑定：<p data-bind="product_name"></p>
+
+        <p data-bind="data1.product_name"></p></li>
+    <li>在模板中处理子循环：<p data-bind="list" data-bind-to="innerHTML">{list|range,'ID:(id)&nbsp; '}
+
+        <p/>使用内部函数range，后面为模板内容。但为了区分子模板和主模板，子模板的大括号用()代替，请注意
+    </li>
+</ul>
+<script>
+    var datastr = '{"error":0,"data":[{"list":[{"id":1},{"id":2},{"id":3},{"id":4}],"id":1,"market_product_id":"2","product_name":"a\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41","thumb":"logo.jpg","content":"<b>\\u82f9\\u679c\\u6c41</b>haha"}]}';            //'   //Render.init(document.all);
+    var data = eval('(' + datastr + ')');
+    var out_abc = 'hello world';
+    function hello(a, b) {
+        return a + '--' + b;
+    }
+    XTemplate.ready(function () {
+        Render.bindData(data.data[0]);
+        Render.bindData('data1', data.data[0]);
+    });
+</script>
+</body>
+</html>

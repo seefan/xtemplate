@@ -1,0 +1,86 @@
+<html>
+<head>
+    <title>数组绑定</title>
+    <script src="../dist/xtemplate.js"></script>
+    <script type="text/javascript" src='../libs/jquery.min.js'></script>
+    <meta charset="utf-8">
+</head>
+<body>
+<ul>
+    <li>模板输出：
+        <ul data-repeat-name='data'>
+            <li>{market_product_id}:{product_name}</li>
+        </ul>
+    </li>
+    <li>原始值按html输出：
+        <ul data-repeat-name='data1'>
+            <li>{market_product_id}:{!content}</li>
+        </ul>
+    </li>
+
+    <li>img的src绑定：
+        <ul data-repeat-name='data2'>
+            <li><img data-bind-src='{thumb}'>{market_product_id}:{!content}</li>
+        </ul>
+    </li>
+
+    <li>使用内部函数处理输出结果：
+        <ul data-repeat-name='data3'>
+            <li>{market_product_id|repeat,':)'}:{!content}</li>
+        </ul>
+        用|分开，直接跟函数名，如果函数有多个参数，那么前面的变量为第一个变量
+    </li>
+    <li>使用外部函数处理输出结果：
+        <ul data-repeat-name='data4'>
+            <li>{market_product_id|#hello,'@_@'}:{!content}</li>
+        </ul>
+        函数名前加了#号
+    </li>
+    <li>使用多个函数处理输出结果：
+        <ul data-repeat-name='data5'>
+            <li>{market_product_id|repeat,')('|#hello,'@_@'}:{!content}</li>
+        </ul>
+        用|连接即可。
+    </li>
+
+    <li>使用外部变量：
+        <ul data-repeat-name='data6'>
+            <li>{market_product_id}:{#out_abc}</li>
+        </ul>
+        变量前加#
+    </li>
+    <li>进行简单的运算：
+        <ul data-repeat-name='data7'>
+            <li>{market_product_id} * 3 + 12= {market_product_id * 3 +12}</li>
+        </ul>
+    </li>
+</ul>
+
+<hr>
+<div data-repeat-name='data0'>
+    {product_name}
+</div>
+<script>
+    var datastr = '{"error":0,"data":[{"id":1,"market_product_id":"2","product_name":"a\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41","thumb":"\\/site\\/Uploads\\/Product\\/201506\\/29\\/559147845e6d3.jpg.jpg","content":"<b>\\u82f9\\u679c\\u6c41</b>haha"},{"id":2,"market_product_id":"22","product_name":"a1adas\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41","thumb":"\\/site\\/Uploads\\/Product\\/201506\\/29\\/559147845e6d3.jpg.jpg","content":"<b>\\u82f9\\u679c\\u6c41</b>haha"},{"id":3,"market_product_id":"6","product_name":"qaaaaa\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41","thumb":"\\/site\\/Uploads\\/Product\\/201506\\/29\\/559147845e6d3.jpg.jpg","content":"<b>\\u82f9\\u679c\\u6c41</b>haha"}]}';            //'   //Render.init(document.all);
+    var data = eval('(' + datastr + ')');
+    var out_abc = 'hello world';
+    function hello(a, b) {
+        return a + '--' + b;
+    }
+    XTemplate.ready(function () {
+        Render.bindRepeatData(data.data);
+        Render.bindRepeatData('data1', data.data);
+        Render.bindRepeatData('data2', data.data);
+        Render.bindRepeatData('data3', data.data);
+        Render.bindRepeatData('data4', data.data);
+        Render.bindRepeatData('data5', data.data);
+        Render.bindRepeatData('data6', data.data);
+        Render.bindRepeatData('data7', data.data);
+        this.load('data0', 'data.json', '', function (e) {
+            return e.data;
+        });
+    });
+
+</script>
+</body>
+</html>

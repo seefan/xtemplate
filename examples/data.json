@@ -1,0 +1,8 @@
+{"error":0,"data":[
+{"thumb":"../images/product-1.jpg","product_name":"果汁来了官方体验店","price":12,"oldprice":100,"list":[{"id":1},{"id":2},{"id":3},{"id":4}]},
+{"thumb":"../images/product-2.jpg","product_name":"果汁来了官方体验店","price":13,"oldprice":100},
+{"thumb":"../images/product-3.jpg","product_name":"果汁来了官方体验店","price":24,"oldprice":100},
+{"thumb":"../images/product-4.jpg","product_name":"果汁来了官方体验店","price":15,"oldprice":100},
+{"thumb":"../images/product-5.jpg","product_name":"果汁来了官方体验店","price":65,"oldprice":100},
+{"thumb":"../images/product-6.jpg","product_name":"果汁来了官方体验店","price":32,"oldprice":100}
+]}
