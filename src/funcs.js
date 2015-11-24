@@ -167,7 +167,7 @@
     f.range = function (list, tmpl) {
         var html = '';
         if (tmpl) {
-            tmpl = tmpl.replace('(', '{').replace(')', '}');
+            tmpl = tmpl.replace(/\(/g, '{').replace(/\)/g, '}');
             var func = r.syntax.buildFunc('range', tmpl);
             if (func) {
                 for (var i = 0; i < list.length; i++) {

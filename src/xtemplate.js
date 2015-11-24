@@ -140,6 +140,9 @@
     x.load = function (id, postUrl, param, dataFilter, callback, errorback) {
         var opt = {};
         opt.url = postUrl;
+        if (param === '' || typeof param == 'undefined') {
+            param = r.util.getUrlQuery();
+        }
         opt.data = param;
         opt.type = 'POST';
         if (errorback) {
@@ -148,7 +151,7 @@
             opt.error = x.error_callback;
         } else {
             opt.error = function (data, status) {
-                console.log(status);
+                console.log(data, status);
             };
         }
         opt.success = function (data) {

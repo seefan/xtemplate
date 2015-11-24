@@ -12,7 +12,7 @@
  *
  *     <p data-bind='title'></p>
  *
- * 这时如果有一个变量为如下结构{title:'hello world'}，那么，这个name为title的p标签就会显示hello world。
+ * 这时如果有一个变量为如下结构{title:'hello world'}，那么，这个data-bind为title的p标签就会显示hello world。
  *
  * 最终会生成
  *
@@ -206,6 +206,50 @@
  * 在变量名中使用，如果果变量名前加#，则指定这个变量为全局变量，这时这个变量必须是已经定义好的全局变量。
  *
  *
+ * 绑定示例
+ * =============
+ *
+ *     注意：使用load方法，需要jQuery的支持，详细见API中关于函数的介绍
+ *
+ *     第1个参数为为绑定名称，第2个为请求的数据地址，第3个为请求的参数，第4个为数据过滤处理，一般用于把要绑定的数据返回。
+ *
+ * json的数据内容为
+ *
+ *     {
+ *     "error":0,
+ *     "data":[
+ *      {"thumb":"../images/product-1.jpg","product_name":"体验品","price":12,"oldprice":100},
+ *      {"thumb":"../images/product-2.jpg","product_name":"体验品","price":13,"oldprice":100},
+ *      {"thumb":"../images/product-3.jpg","product_name":"体验品","price":24,"oldprice":100},
+ *      {"thumb":"../images/product-4.jpg","product_name":"体验品","price":15,"oldprice":100},
+ *      {"thumb":"../images/product-5.jpg","product_name":"体验品","price":65,"oldprice":100},
+ *      {"thumb":"../images/product-6.jpg","product_name":"体验品","price":32,"oldprice":100}
+ *     ]}
+ *
+ * 模板内容为
+ *
+ *     <ul data-repeat-name='data0'>
+ *         <li>{product_name} {price} <s>{oldprice}</s> </li>
+ *     </ul>
+ *
+ * script为
+ *
+ *      XTemplate.ready(function () {
+ *         this.load('data0', 'data.json', {}, function (e) {
+ *             return e.data;
+ *         });
+ *     });
+ *
+ * 最终将输出
+ *
+ *     <ul data-repeat-name='data0'>
+ *          <li>体验品 12 <s>100</s> </li>
+ *          <li>体验品 13 <s>100</s> </li>
+ *          <li>体验品 24 <s>100</s> </li>
+ *          <li>体验品 15 <s>100</s> </li>
+ *          <li>体验品 65 <s>100</s> </li>
+ *          <li>体验品 32 <s>100</s> </li>
+ *     </ul>
  *
  * @class Render
  */
@@ -1119,7 +1163,7 @@
     f.range = function (list, tmpl) {
         var html = '';
         if (tmpl) {
-            tmpl = tmpl.replace('(', '{').replace(')', '}');
+            tmpl = tmpl.replace(/\(/g, '{').replace(/\)/g, '}');
             var func = r.syntax.buildFunc('range', tmpl);
             if (func) {
                 for (var i = 0; i < list.length; i++) {
@@ -1326,6 +1370,9 @@
     x.load = function (id, postUrl, param, dataFilter, callback, errorback) {
         var opt = {};
         opt.url = postUrl;
+        if (param === '' || typeof param == 'undefined') {
+            param = r.util.getUrlQuery();
+        }
         opt.data = param;
         opt.type = 'POST';
         if (errorback) {
@@ -1334,7 +1381,7 @@
             opt.error = x.error_callback;
         } else {
             opt.error = function (data, status) {
-                console.log(status);
+                console.log(data, status);
             };
         }
         opt.success = function (data) {
