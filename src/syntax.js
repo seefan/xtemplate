@@ -293,11 +293,16 @@
      * 给缓存的对象设置值
      * @param id
      * @param html
+     * @param append
      */
-    r.syntax.setRepeatHtml = function (id, html) {
+    r.syntax.setRepeatHtml = function (id, html, append) {
         var item = this.cache['xd-repeat-' + id];
         if (item) {
-            item.innerHTML = html;
+            if (append === true) {
+                item.innerHTML += html;
+            } else {
+                item.innerHTML = html;
+            }
             r.util.show(item);
         }
     };

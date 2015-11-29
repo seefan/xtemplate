@@ -382,8 +382,9 @@
      * @method bindRepeatData
      * @param name 要循环输出的模板范围的名称，默认为data，可省略不写
      * @param data 要绑定的数据
+     * @param append [可选] 是否追加数据，默认为false
      */
-    r.bindRepeatData = function (name, data) {
+    r.bindRepeatData = function (name, data, append) {
         if (typeof data == 'undefined') {
             data = name;
             name = 'data';
@@ -397,7 +398,7 @@
             for (var i = 0; i < data.length; i++) {
                 html += func(this, data[i]);
             }
-            this.syntax.setRepeatHtml(name, html);
+            this.syntax.setRepeatHtml(name, html, append);
         }
     };
 
@@ -986,11 +987,16 @@
      * 给缓存的对象设置值
      * @param id
      * @param html
+     * @param append
      */
-    r.syntax.setRepeatHtml = function (id, html) {
+    r.syntax.setRepeatHtml = function (id, html, append) {
         var item = this.cache['xd-repeat-' + id];
         if (item) {
-            item.innerHTML = html;
+            if (append === true) {
+                item.innerHTML += html;
+            } else {
+                item.innerHTML = html;
+            }
             r.util.show(item);
         }
     };

@@ -382,8 +382,9 @@
      * @method bindRepeatData
      * @param name 要循环输出的模板范围的名称，默认为data，可省略不写
      * @param data 要绑定的数据
+     * @param append [可选] 是否追加数据，默认为false
      */
-    r.bindRepeatData = function (name, data) {
+    r.bindRepeatData = function (name, data, append) {
         if (typeof data == 'undefined') {
             data = name;
             name = 'data';
@@ -397,7 +398,7 @@
             for (var i = 0; i < data.length; i++) {
                 html += func(this, data[i]);
             }
-            this.syntax.setRepeatHtml(name, html);
+            this.syntax.setRepeatHtml(name, html, append);
         }
     };
 
