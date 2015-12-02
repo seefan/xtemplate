@@ -25,10 +25,10 @@
      * @param value 值
      */
     u.setValue = function (ele, value) {
-        var tag = ele.tagName;
+        var tag = ele.tagName, i = 0;
         var bs = this.getBindToNameList(ele);
         if (bs.length > 0) {
-            for (var i in bs) {
+            for (i in bs) {
                 var attrName = bs[i];
                 if (ele.attributes.hasOwnProperty(attrName)) {
                     ele.setAttribute(attrName, value);
@@ -43,6 +43,14 @@
                     break;
                 case 'INPUT':
                     ele.value = value;
+                    break;
+                case 'SELECT':
+                    for (i = 0; i < ele.options.length; i++) {
+                        if (ele.options[i].value == value) {
+                            ele.options[i].selected = true;
+                            break;
+                        }
+                    }
                     break;
                 default:
                     ele.innerHTML = value;
