@@ -415,7 +415,7 @@
         if (i < data.length) {
             setTimeout(function () {
                 r.appendData(data, i, name, func, append);
-            }, 100);
+            }, 50);
         }
     };
 
