@@ -383,8 +383,9 @@
      * @param name 要循环输出的模板范围的名称，默认为data，可省略不写
      * @param data 要绑定的数据
      * @param append [可选] 是否追加数据，默认为false
+     * @param animation [可选] 是否追加数据，默认为false
      */
-    r.bindRepeatData = function (name, data, append) {
+    r.bindRepeatData = function (name, data, append, animation) {
         if (typeof data == 'undefined') {
             data = name;
             name = 'data';
@@ -392,16 +393,31 @@
         if (!data || data.length < 1) {
             return;
         }
-        var func = this.syntax.cacheRepeatFunc(name);
+        var func = this.syntax.cacheRepeatFunc(name), i = 0;
         if (func) {
-            var html = '';
-            for (var i = 0; i < data.length; i++) {
-                html += func(this, data[i]);
+            if (animation === true) {
+                //for (i = 0; i < data.length; i++) {
+                //    this.syntax.setRepeatHtml(name, func(this, data[i]), i === 0 ? (append === true ? true : false) : true);
+                //}
+                this.appendData(data, 0, name, func, append);
+            } else {
+                var html = '';
+                for (i = 0; i < data.length; i++) {
+                    html += func(this, data[i]);
+                }
+                this.syntax.setRepeatHtml(name, html, append);
             }
-            this.syntax.setRepeatHtml(name, html, append);
         }
     };
-
+    r.appendData = function (data, i, name, func, append) {
+        r.syntax.setRepeatHtml(name, func(this, data[i]), i === 0 ? (append === true ? true : false) : true);
+        i++;
+        if (i < data.length) {
+            setTimeout(function () {
+                r.appendData(data, i, name, func, append);
+            }, 100);
+        }
+    };
 
     /**
      * 如果需要自行扩展Render的函数，请使用本函数。
