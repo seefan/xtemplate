@@ -17,7 +17,7 @@
             }
         } else {
             if (reload) {
-                r.init(document.all);
+                r.init(document);
             }
             if (typeof callback === 'function') {
                 x.callback = callback;
@@ -174,10 +174,10 @@
             }
             if (ok) {
                 if (toString.apply(data) == "[object Array]") {
-                    r.bindRepeatData(data, id);
+                    r.bindRepeatData(id, data);
                 } else {
                     if (id) {
-                        r.bindData(data, id);
+                        r.bindData(id, data);
                     } else {
                         r.bindData(data);
                     }
