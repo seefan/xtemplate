@@ -80,6 +80,10 @@
  *     错误的例子：<img data-bind="thumb" data-bind-to="src" src='/{imgsrc}/abc.jpg'>
  *     /{imgsrc}/abc.jpg这个地址是不存在的地方，所以会引起一个错误的http请求。
  *
+ * 6.在一个标签内绑定多个属性名:
+ *
+ *     <img data-bind="thumb" data-bind-to="title data-load-src"/>
+ *     多个属性中间用空格分开，这个可以一次绑定属性。
  *
  * 数组绑定
  * =============

@@ -1,12 +1,27 @@
 <html>
 <head>
     <title>test</title>
+    <script src="../dist/xtemplate.js"></script>
 </head>
 <body>
 <ul>
 <li><a href='single.html'>单变量绑定</a></li>
 <li><a href='list.html'>数组绑定</a></li>
 </ul>
+进行简单的运算：<p data-bind="product_name" data-bind-to="innerHTML">
+    {market_product_id | case,1,'is1',2,product_name,2}/{product_name}/show.html
 
+<p/>用|连接即可。
+<script>
+    var datastr = '{"error":0,"data":[{"list":[{"id":1},{"id":2},{"id":3},{"id":4}],"id":1,"market_product_id":"2","product_name":"a\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41\\u82f9\\u679c\\u6c41","thumb":"logo.jpg","content":"<b>\\u82f9\\u679c\\u6c41</b>haha"}]}';            //'   //Render.init(document.all);
+    var data = eval('(' + datastr + ')');
+    var out_abc = 'hello world';
+    function hello(a, b) {
+        return a + '--' + b;
+    }
+    XTemplate.ready(function () {
+        Render.bindData(data.data[0]);
+    });
+</script>
 </body>
 </html>

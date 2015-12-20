@@ -80,6 +80,10 @@
  *     错误的例子：<img data-bind="thumb" data-bind-to="src" src='/{imgsrc}/abc.jpg'>
  *     /{imgsrc}/abc.jpg这个地址是不存在的地方，所以会引起一个错误的http请求。
  *
+ * 6.在一个标签内绑定多个属性名:
+ *
+ *     <img data-bind="thumb" data-bind-to="title data-load-src"/>
+ *     多个属性中间用空格分开，这个可以一次绑定属性。
  *
  * 数组绑定
  * =============
@@ -771,7 +775,7 @@
             funcString = funcString.substring(1);
             filterHtml = false;
         }
-        var f = funcString.split('|');
+        var f = splitWord(funcString);
         if (f.length > 0) {
             if (filterHtml) {
                 return 'Render.util.html(' + runFuncString(f, f.length - 1) + ')';
@@ -790,15 +794,26 @@
      * @returns {*}
      */
     function runFuncString(funcs, i) {
-        if (i > 0) {
-            var funcArray = funcs[i].split(',');
-            if (funcArray.length > 0) {
-                var funcName = funcArray[0];
-                funcArray[0] = runFuncString(funcs, i - 1);
-                return runFunc(funcName) + '(' + funcArray.join(',') + ')';
-            }
-        } else {
+        if (funcs.length === 1) {
             return runValue(funcs[0]);
+        }
+        if (i > 0) {
+            var array = [];
+            for (; i > 0; i--) {
+                if (funcs[i] === '|') {
+                    break;
+                } else {
+                    array.push(funcs[i]);
+                }
+            }
+            var funcName = array.pop(), args = '', j;
+            array.push(runFuncString(funcs, i - 1));
+            for (j = array.length; j > 0; j--) {
+                args += runValue(array[j - 1]);
+            }
+            return runFunc(funcName) + '(' + args + ')';
+        } else {
+            return funcs[0];
         }
         return '';
     }
@@ -829,39 +844,41 @@
      */
     function runValue(word) {
         var val = '';
-        if (word.length > 0) {
-            var words = splitWord(word);
-            for (var i = 0; i < words.length; i++) {
-                switch (words[i][0]) {
-                    case '+':
-                    case "-":
-                    case '*':
-                    case '/':
-                    case '(':
-                    case ')':
-                    case "'":
-                    case '"':
-                    case '0':
-                    case '1':
-                    case '2':
-                    case '3':
-                    case '4':
-                    case '5':
-                    case '6':
-                    case '7':
-                    case '8':
-                    case '9':
-                        val += words[i];
-                        break;
-                    case '#'://外部变量
-                        val += words[i].substring(1);
-                        break;
-                    default :
-                        val += "my.util.getValue('" + words[i] + "',vo)";
-                        break;
-                }
-            }
+        switch (word[0]) {
+            case '+':
+            case "-":
+            case '*':
+            case '/':
+            case '(':
+            case ')':
+            case "'":
+            case '"':
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                val += word;
+                break;
+            case '|'://内部用，不开放
+                val += '+';
+                break;
+            case ','://内部用，不开放
+                val += ',';
+                break;
+            case '#'://外部变量
+                val += word.substring(1);
+                break;
+            default :
+                val += "my.util.getValue('" + word + "',vo)";
+                break;
         }
+
         return val === '' ? "''" : val;
     }
 
@@ -874,6 +891,8 @@
         var arr = [], start = 0, end = 0, key, pop = 0;
         for (var i = 0; i < word.length; i++) {
             switch (word[i]) {
+                case '|':
+                case ',':
                 case '+':
                 case '-':
                 case '*':
@@ -895,9 +914,9 @@
                 case '"':
                 case "'":
                     if (i > start) {
-                        key = word.substring(start, i);
-                        if (key.trim() !== '') {
-                            arr.push(key.trim());
+                        key = word.substring(start, i).trim();
+                        if (key !== '') {
+                            arr.push(key);
                         }
                     }
                     end = getEnd(word, i);
@@ -911,9 +930,9 @@
 
         }
         if (word.length > start) {
-            key = word.substring(start, word.length);
-            if (key.trim() !== '') {
-                arr.push(key.trim());
+            key = word.substring(start, word.length).trim();
+            if (key !== '') {
+                arr.push(key);
             }
         }
         return arr;
@@ -1277,7 +1296,7 @@
             }
         } else {
             if (reload) {
-                r.init(document.all);
+                r.init(document);
             }
             if (typeof callback === 'function') {
                 x.callback = callback;
@@ -1434,10 +1453,10 @@
             }
             if (ok) {
                 if (toString.apply(data) == "[object Array]") {
-                    r.bindRepeatData(data, id);
+                    r.bindRepeatData(id, data);
                 } else {
                     if (id) {
-                        r.bindData(data, id);
+                        r.bindData(id, data);
                     } else {
                         r.bindData(data);
                     }
