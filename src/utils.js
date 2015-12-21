@@ -227,14 +227,19 @@
      *
      * @method show
      * @param ele 要显示的对象实例
+     * @param isTrue 是否显示，默认为true
      */
-    u.show = function (ele) {
+    u.show = function (ele, isTrue) {
         if (ele) {
-            if (ele.style.display == 'none') {
-                ele.style.display = '';
-            }
-            if (ele.classList.contains('hide')) {
-                ele.classList.remove('hide');
+            if (isTrue !== false) {
+                if (ele.style.display == 'none') {
+                    ele.style.display = '';
+                }
+                if (ele.classList.contains('hide')) {
+                    ele.classList.remove('hide');
+                }
+            } else {
+                ele.style.display = 'none';
             }
         }
     };

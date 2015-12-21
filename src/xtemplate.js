@@ -9,16 +9,15 @@
     x.isInit = false;
     //是否使用其它的ajax方法，默认使用jquery
     x.optAjax = false;
+    x.hideRepeat = true;
+    x.hideBind = false;
     //准备方法，XTemplate的入口方法，XTemplate准备好后将执行这个方法，以便自动执行一些绑定函数等。
-    x.ready = function (callback, reload) {
+    x.ready = function (callback) {
         if (!x.isInit) {
             if (typeof callback === 'function') {
                 x.callback = callback;
             }
         } else {
-            if (reload) {
-                r.init(document);
-            }
             if (typeof callback === 'function') {
                 x.callback = callback;
                 x.callback();
@@ -30,7 +29,6 @@
      */
     x.init = function () {
         if (r) {
-            r.init(d);
             x.isInit = true;
             if (x.callback) {
                 x.callback();

@@ -299,64 +299,51 @@
             name = '__data';
         }
         w.$scope[name] = data;
-        this.$bindKey[name] = [];
-        var i = 0, tkey;
-        for (tkey in data) {
-            var k = this.util.getName(tkey, data);
-            for (i = 0; i < k.length; i++) {
-                this.$bindKey[name].push(k[i]);
-            }
-        }
-
-        for (var j = 0; j < this.$bindKey[name].length; j++) {
-            var key = this.$bindKey[name][j], item = w.$scope[name];
-            if (name != '__data') {
-                key = name + '.' + key;
-                item = w.$scope;
-            }
-            var items = doc.querySelectorAll('[data-bind="' + key + '"]');
-            var value, tpl;
-            for (i = 0; i < items.length; i++) {
-                value = '';
-                var bs = this.util.getBindToNameList(items[i]);//data-bind-to
-                if (bs.length > 0) {
-                    for (var m in bs) {
-                        var attrName = bs[m];
-                        if (items[i].attributes.hasOwnProperty(attrName)) {
-                            tpl = items[i].attributes[attrName].value;
-                        } else {
-                            tpl = items[i][attrName];
-                        }
-                        var xf = r.syntax.buildFunc(key, tpl);
-                        if (xf) {
-                            value = xf(this, item);
-                        } else {
-                            //如果简单的绑定innerHTML,就不再转为纯文本了
-                            if (attrName === 'innerHTML') {
-                                value = this.util.getValue(key, item);
-                            } else {
-                                value = this.util.html(this.util.getValue(key, item));
-                            }
-                        }
-                    }
-
-                } else {
-                    //单独处理一下img的data-bind-src，使用模板
-                    if (items[i].tagName == 'IMG' && items[i].attributes.hasOwnProperty('data-bind-src')) {
-                        var xff = r.syntax.buildFunc(key, items[i].attributes['data-bind-src'].value);
-                        if (xff) {
-                            value = xff(this, item);
-                        } else {
-                            value = this.util.getValue(key, item);//不需要html转义
-                        }
+        var items = doc.querySelectorAll('[data-bind]');
+        var i, value, tpl, attrName, key;
+        for (i = 0; i < items.length; i++) {
+            value = '';
+            key = items[i].attributes['data-bind'].value;
+            var bs = this.util.getBindToNameList(items[i]);//data-bind-to
+            if (bs.length > 0) {
+                for (var m in bs) {
+                    attrName = bs[m];
+                    if (items[i].attributes.hasOwnProperty(attrName)) {
+                        tpl = items[i].attributes[attrName].value;
                     } else {
-                        value = this.util.html(this.util.getValue(key, item));
+                        tpl = items[i][attrName];
+                    }
+                    //var xf = r.syntax.buildFunc(key, tpl);
+                    var xf = r.syntax.cacheFunc('bind', key, tpl);
+                    if (xf) {
+                        value = xf(this, data);
+                    } else {
+                        //如果简单的绑定innerHTML,就不再转为纯文本了
+                        if (attrName === 'innerHTML') {
+                            value = this.util.getValue(key, data);
+                        } else {
+                            value = this.util.html(this.util.getValue(key, data));
+                        }
                     }
                 }
 
-                this.util.setValue(items[i], value);
-                this.util.show(items[i]);
+            } else {
+                //单独处理一下img的data-bind-src，使用模板
+                if (items[i].tagName == 'IMG' && items[i].attributes.hasOwnProperty('data-bind-src')) {
+                    //var xff = r.syntax.buildFunc(key, items[i].attributes['data-bind-src'].value);
+                    var xff = r.syntax.cacheFunc('bind', key, items[i].attributes['data-bind-src'].value);
+                    if (xff) {
+                        value = xff(this, data);
+                    } else {
+                        value = this.util.getValue(key, data);//不需要html转义
+                    }
+                } else {
+                    value = this.util.html(this.util.getValue(key, data));
+                }
             }
+
+            this.util.setValue(items[i], value);
+            this.util.show(items[i]);
         }
     };
     /**
@@ -397,30 +384,38 @@
         if (!data || data.length < 1) {
             return;
         }
-        var func = this.syntax.cacheRepeatFunc(name), i = 0;
+        var item = document.querySelector('[data-repeat-name="' + name + '"]');
+
+        var func = this.syntax.cacheFunc('repeat', name, item.innerHTML), i = 0;
+        item.innerHTML = '';
         if (func) {
             if (animation === true) {
-                //for (i = 0; i < data.length; i++) {
-                //    this.syntax.setRepeatHtml(name, func(this, data[i]), i === 0 ? (append === true ? true : false) : true);
-                //}
-                this.appendData(data, 0, name, func, append);
+                this.appendData(data, 0, item, func, append);
             } else {
                 var html = '';
                 for (i = 0; i < data.length; i++) {
                     html += func(this, data[i]);
                 }
-                this.syntax.setRepeatHtml(name, html, append);
+                this.setRepeatHtml(item, html, append);
             }
         }
     };
-    r.appendData = function (data, i, name, func, append) {
-        r.syntax.setRepeatHtml(name, func(this, data[i]), i === 0 ? (append === true ? true : false) : true);
+    r.appendData = function (data, i, item, func, append) {
+        r.setRepeatHtml(item, func(this, data[i]), i === 0 ? (append === true ? true : false) : true);
         i++;
         if (i < data.length) {
             setTimeout(function () {
-                r.appendData(data, i, name, func, append);
+                r.appendData(data, i, item, func, append);
             }, 50);
         }
+    };
+    r.setRepeatHtml = function (item, html, append) {
+        if (append === true) {
+            item.innerHTML += html;
+        } else {
+            item.innerHTML = html;
+        }
+        r.util.show(item);
     };
 
     /**

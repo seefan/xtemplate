@@ -76,23 +76,35 @@
             return runValue(funcs[0]);
         }
         if (i > 0) {
-            var array = [];
-            for (; i > 0; i--) {
-                if (funcs[i] === '|') {
-                    break;
+            var array = [], j = 0, args = '';
+            for (; i >= 0; i--) {
+                if (funcs[i] === '|') {//发现一个函数
+                    var funcName = array.pop();
+                    for (j = array.length; j > 0; j--) {
+                        args += runValue(array[j - 1]);
+                    }
+                    args = runFuncString(funcs, i - 1) + args;
+                    return runFunc(funcName) + '(' + args + ')';
                 } else {
                     array.push(funcs[i]);
                 }
             }
-            var funcName = array.pop(), args = '', j;
-            array.push(runFuncString(funcs, i - 1));
-            for (j = array.length; j > 0; j--) {
-                args += runValue(array[j - 1]);
+            if (array.length > 0) {
+                for (j = array.length; j > 0; j--) {
+                    args += runValue(array[j - 1]);
+                }
+                return args;
             }
-            return runFunc(funcName) + '(' + args + ')';
         } else {
-            return funcs[0];
+            return runValue(funcs[0]);
         }
+        //for (i = funcs.length - 1; i >= 0; i++) {
+        //    if (funcs[i] === '|') {//发现一个函数
+        //        array.reserved();
+        //    } else {
+        //        array.push(funcs[i]);
+        //    }
+        //}
         return '';
     }
 
@@ -254,7 +266,7 @@
                 return new Function('my', 'vo', funcBody);
                 /* jshint ignore:end */
             } catch (e) {
-                console.log('解析bind模板' + name + '出错，' + e.message);
+                console.log('解析模板' + name + ':' + tpl + '出错，' + e.message);
             }
         }
         return false;
@@ -264,9 +276,17 @@
      * @param document 渲染器的有效范围
      */
     r.init = function (document) {
-        var items = document.querySelectorAll('[data-repeat-name]');
-        for (var i = 0; i < items.length; i++) {
-            r.syntax.initRepeat(items[i], items[i].attributes['data-repeat-name'].value);
+        if (this.hideRepeat) {
+            var items = document.querySelectorAll('[data-repeat-name]');
+            for (var i = 0; i < items.length; i++) {
+                this.util.show(items[i], false);
+            }
+        }
+        if (this.hideBind) {
+            var items = document.querySelectorAll('[data-bind]');
+            for (var i = 0; i < items.length; i++) {
+                this.util.show(items[i], false);
+            }
         }
     };
     /**
@@ -274,51 +294,14 @@
      * @param id
      * @returns {*}
      */
-    r.syntax.cacheRepeatFunc = function (id) {
-        var f = this.cache['xdf-repeat-' + id];
-        if (f) {
-            return f;
-        } else {
-            return false;
-        }
-    };
-    /**
-     * 处理循环
-     * @param item
-     * @param id
-     */
-    r.syntax.initRepeat = function (item, id) {
-        var html = item.innerHTML;
-        if (this.cache['xd-repeat-' + id] != item) {
-            this.cache['xd-repeat-' + id] = item;
-            item.innerHTML = '';
-        }
-        var f = this.cache['xdf-repeat-' + id];
-        if (f) {
-            return;
-        }
-        f = r.syntax.buildFunc(id, html);
+    r.syntax.cacheFunc = function (type, id, html) {
+        var f = this.cache[type + '-func-' + id];
         if (!f) {
-            f = function () {
-            };
-        }
-        this.cache['xdf-repeat-' + id] = f;
-    };
-    /**
-     * 给缓存的对象设置值
-     * @param id
-     * @param html
-     * @param append
-     */
-    r.syntax.setRepeatHtml = function (id, html, append) {
-        var item = this.cache['xd-repeat-' + id];
-        if (item) {
-            if (append === true) {
-                item.innerHTML += html;
-            } else {
-                item.innerHTML = html;
+            f = this.buildFunc(id, html);
+            if (f) {
+                this.cache[type + '-func-' + id] = f;
             }
-            r.util.show(item);
         }
+        return f;
     };
 })(window.Render);
