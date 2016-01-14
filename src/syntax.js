@@ -276,15 +276,16 @@
      * @param document 渲染器的有效范围
      */
     r.init = function (document) {
+        var items, i;
         if (this.hideRepeat) {
-            var items = document.querySelectorAll('[data-repeat-name]');
-            for (var i = 0; i < items.length; i++) {
+            items = document.querySelectorAll('[data-repeat-name]');
+            for (i = 0; i < items.length; i++) {
                 this.util.show(items[i], false);
             }
         }
         if (this.hideBind) {
-            var items = document.querySelectorAll('[data-bind]');
-            for (var i = 0; i < items.length; i++) {
+            items = document.querySelectorAll('[data-bind]');
+            for (i = 0; i < items.length; i++) {
                 this.util.show(items[i], false);
             }
         }

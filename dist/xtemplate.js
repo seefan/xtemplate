@@ -669,14 +669,19 @@
      *
      * @method show
      * @param ele 要显示的对象实例
+     * @param isTrue 是否显示，默认为true
      */
-    u.show = function (ele) {
+    u.show = function (ele, isTrue) {
         if (ele) {
-            if (ele.style.display == 'none') {
-                ele.style.display = '';
-            }
-            if (ele.classList.contains('hide')) {
-                ele.classList.remove('hide');
+            if (isTrue !== false) {
+                if (ele.style.display == 'none') {
+                    ele.style.display = '';
+                }
+                if (ele.classList.contains('hide')) {
+                    ele.classList.remove('hide');
+                }
+            } else {
+                ele.style.display = 'none';
             }
         }
     };
@@ -993,9 +998,18 @@
      * @param document 渲染器的有效范围
      */
     r.init = function (document) {
-        var items = document.querySelectorAll('[data-repeat-name]');
-        for (var i = 0; i < items.length; i++) {
-            r.syntax.initRepeat(items[i], items[i].attributes['data-repeat-name'].value);
+        var items, i;
+        if (this.hideRepeat) {
+            items = document.querySelectorAll('[data-repeat-name]');
+            for (i = 0; i < items.length; i++) {
+                this.util.show(items[i], false);
+            }
+        }
+        if (this.hideBind) {
+            items = document.querySelectorAll('[data-bind]');
+            for (i = 0; i < items.length; i++) {
+                this.util.show(items[i], false);
+            }
         }
     };
     /**
@@ -1003,14 +1017,6 @@
      * @param id
      * @returns {*}
      */
-    r.syntax.cacheRepeatFunc = function (id) {
-        var f = this.cache['xrf-func-' + id];
-        if (f) {
-            return f;
-        } else {
-            return false;
-        }
-    };
     r.syntax.cacheFunc = function (type, id, html) {
         var f = this.cache[type + '-func-' + id];
         if (!f) {
@@ -1020,45 +1026,6 @@
             }
         }
         return f;
-    };
-    /**
-     * 处理循环
-     * @param item
-     * @param id
-     */
-    r.syntax.initRepeat = function (item, id) {
-        var html = item.innerHTML;
-        if (this.cache['xd-repeat-' + id] != item) {
-            this.cache['xd-repeat-' + id] = item;
-            item.innerHTML = '';
-        }
-        var f = this.cache['xdf-repeat-' + id];
-        if (f) {
-            return;
-        }
-        f = r.syntax.buildFunc(id, html);
-        if (!f) {
-            f = function () {
-            };
-        }
-        this.cache['xdf-repeat-' + id] = f;
-    };
-    /**
-     * 给缓存的对象设置值
-     * @param id
-     * @param html
-     * @param append
-     */
-    r.syntax.setRepeatHtml = function (id, html, append) {
-        var item = this.cache['xd-repeat-' + id];
-        if (item) {
-            if (append === true) {
-                item.innerHTML += html;
-            } else {
-                item.innerHTML = html;
-            }
-            r.util.show(item);
-        }
     };
 })(window.Render);;/**
  * XTemplate 所有的扩展函数集合，用于处理html中常见的格式转换，默认值等处理。
@@ -1497,13 +1464,17 @@
     x.setAjax = function (ajax) {
         this.optAjax = ajax;
     };
+
     //开始初始化将执行ready方法
-    if (/complete|loaded|interactive/.test(document.readyState) && document.body) {
-        x.init();
-    }
-    else {
-        document.addEventListener('DOMContentLoaded', function () {
+    function testReady() {
+        if (/complete|loaded|interactive/.test(document.readyState) && document.body) {
             x.init();
-        }, false);
+        } else {
+            setTimeout(function () {
+                testReady();
+            }, 1);
+        }
     }
+
+    testReady();
 })(document, window, window.XTemplate = {});
