@@ -7,7 +7,7 @@ module.exports = function (grunt) {
                 separator: ';'
             },
             dist: {
-                src: ['src/render.js', 'src/utils.js', 'src/syntax.js', 'src/funcs.js', 'src/xtemplate.js'],
+                src: ['src/render.js', 'src/util.js', 'src/syntax.js', 'src/funcs.js', 'src/xtemplate.js'],
                 dest: 'dist/<%= pkg.name %>.js'
             }
         },
@@ -54,15 +54,6 @@ module.exports = function (grunt) {
             main: {
                 files: [
                     {src: ['examples/logo.jpg'], dest: 'doc/logo.jpg'}
-                ]
-            }
-        }, ftpscript: {
-            main: {
-                options: {
-                    host: 'qxu1142020235.my3w.com'
-                },
-                files: [
-                    {cwd: 'filesToCopy', src: ['doc'], dest: '/htdocs/doc'}
                 ]
             }
         }

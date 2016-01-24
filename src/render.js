@@ -276,7 +276,6 @@
     //工具
     r.util = {};
 
-
     /**
      * 绑定数据值
      *
@@ -294,9 +293,10 @@
      * @param data 要绑定的数据
      */
     r.bindData = function (name, data) {
+
         if (typeof data === 'undefined') {
             data = name;
-            name = '__data';
+            name = '__data__';
         }
         w.$scope[name] = data;
         var items = doc.querySelectorAll('[data-bind]');
@@ -304,17 +304,19 @@
         for (i = 0; i < items.length; i++) {
             value = '';
             key = items[i].attributes['data-bind'].value;
-            var bs = this.util.getBindToNameList(items[i]);//data-bind-to
+            var bs = this.util.getBindToNameList(items[i]),
+                m = 0;//data-bind-to
+
             if (bs.length > 0) {
-                for (var m in bs) {
+                for (; m < bs.length; m++) {
                     attrName = bs[m];
-                    if (items[i].attributes.hasOwnProperty(attrName)) {
+                    if (items[i].attributes[attrName]) {
                         tpl = items[i].attributes[attrName].value;
                     } else {
                         tpl = items[i][attrName];
                     }
                     //var xf = r.syntax.buildFunc(key, tpl);
-                    var xf = r.syntax.cacheFunc('bind', key, tpl);
+                    var xf = r.syntax.cacheFunc('bind', tpl, tpl);
                     if (xf) {
                         value = xf(this, data);
                     } else {
@@ -329,9 +331,9 @@
 
             } else {
                 //单独处理一下img的data-bind-src，使用模板
-                if (items[i].tagName == 'IMG' && items[i].attributes.hasOwnProperty('data-bind-src')) {
+                if (items[i].tagName == 'IMG' && items[i].attributes['data-bind-src']) {
                     //var xff = r.syntax.buildFunc(key, items[i].attributes['data-bind-src'].value);
-                    var xff = r.syntax.cacheFunc('bind', key, items[i].attributes['data-bind-src'].value);
+                    var xff = r.syntax.cacheFunc('bind', items[i].attributes['data-bind-src'].value, items[i].attributes['data-bind-src'].value);
                     if (xff) {
                         value = xff(this, data);
                     } else {

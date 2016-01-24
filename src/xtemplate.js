@@ -2,9 +2,8 @@
  * XTemplate，简单快速的将json数据绑定到html上
  * @class XTemplate
  */
-(function (d, w, x) {
+(function (d, w, x,r) {
     'use strict';
-    var r = w.Render;
     //是否已初始化
     x.isInit = false;
     //是否使用其它的ajax方法，默认使用jquery
@@ -28,7 +27,7 @@
      * 初始化
      */
     x.init = function () {
-        if (r) {
+        if (!x.isInit) {
             x.isInit = true;
             if (x.callback) {
                 x.callback();
@@ -171,7 +170,7 @@
                 }
             }
             if (ok) {
-                if (toString.apply(data) == "[object Array]") {
+                if (r.util.isArray(data)) {
                     r.bindRepeatData(id, data);
                 } else {
                     if (id) {
@@ -201,13 +200,26 @@
     x.setAjax = function (ajax) {
         this.optAjax = ajax;
     };
-    //开始初始化将执行ready方法
-    if (/complete|loaded|interactive/.test(document.readyState) && document.body) {
-        x.init();
-    }
-    else {
-        document.addEventListener('DOMContentLoaded', function () {
+    var testReady = function () {
+        if (/complete|loaded|interactive/.test(document.readyState) && document.body) {
             x.init();
-        }, false);
+            return true;
+        }
+        return false;
+    };
+    var timeReady = function () {
+        if (!testReady()) {
+            setTimeout(timeReady, 5);
+        }
+    };
+    //开始初始化将执行ready方法
+    if (!testReady()) {
+        if (document.addEventListener) {
+            document.addEventListener('DOMContentLoaded', function () {
+                testReady();
+            }, false);
+        } else {
+            setTimeout(timeReady, 5);
+        }
     }
-})(document, window, window.XTemplate = {});
+})(document, window, window.XTemplate = {},window.Render);

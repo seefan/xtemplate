@@ -6,7 +6,6 @@
  */
 (function (r) {
     'use strict';
-    var f = window.Render.funcs;
     /**
      * 指定输出的默认值，如果有值就原样输出，如果空或是null，就输出默认值。
      *
@@ -19,12 +18,12 @@
      * @param defaultVal 默认值
      * @returns {object}
      */
-    f.default = function (val, defaultVal) {
+    r.addFunc('default', function (val, defaultVal) {
         if (typeof(val) == 'undefined' || val === '' || val === 'null') {
             return defaultVal;
         }
         return val;
-    };
+    });
     /**
      * 根据设定值返回指定内容
      *
@@ -38,14 +37,14 @@
      * @param val {string} 变量名
      * @returns {object}
      */
-    f.case = function (val) {
+    r.addFunc('case', function (val) {
         for (var i = 1; i < arguments.length; i += 2) {
             if (val == arguments[i] && i < arguments.length - 1) {
                 return arguments[i + 1];
             }
         }
         return arguments[arguments.length - 1];
-    };
+    });
     /**
      * 格式化货币，最少小数显示，
      * 示例：
@@ -58,9 +57,9 @@
      * @param val {string} 变量名
      * @returns {number}
      */
-    f.format_money = function (val) {
+    r.addFunc('format_money', function (val) {
         return parseFloat(val);
-    };
+    });
 
 
     /**
@@ -78,7 +77,7 @@
      * @param fmt {string} 格式串
      * @returns {string} 格式化后的日期串
      */
-    f.format_date = function (val, fmt) {
+    r.addFunc('format_date', function (val, fmt) {
         if (typeof(val) != 'object') {
             val = new Date(parseInt(val));
         }
@@ -101,7 +100,7 @@
                 fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (format_data_o[k]) : (("00" + format_data_o[k]).substr(("" + format_data_o[k]).length)));
         return fmt;
 
-    };
+    });
     /**
      * 数字保留小数位数
      * 示例：
@@ -113,7 +112,7 @@
      * @param c {number} 保留的小数位置，默认为0
      * @returns {number}
      */
-    f.fixed = function (val, c) {
+    r.addFunc('fixed', function (val, c) {
         if (typeof c == 'undefined') {
             c = 0;
         }
@@ -122,16 +121,16 @@
         } else {
             return val;
         }
-    };
+    });
     /**
      * 没有正确的函数处理时，用此函数处理，直接输出变量值
      * 外部不要使用
      * @param val {string} 变量名
      * @returns {string}
      */
-    f.noFunc = function (val) {
+    r.addFunc('noFunc', function (val) {
         return '没有找到正确的处理函数';
-    };
+    });
     /**
      * 重复输出num次val
      *
@@ -144,13 +143,13 @@
      * @param res {string}要重复的内容
      * @returns {string}
      */
-    f.repeat = function (val, res) {
+    r.addFunc('repeat', function (val, res) {
         var result = '';
         for (var i = 0; i < val; i++) {
             result += res;
         }
         return result;
-    };
+    });
     /**
      * 内部实现简单的循环，注意，内部模板和普通模板有区别，需要使用小括号代替大扩号。
      * 常用于嵌套循环显示。
@@ -164,7 +163,7 @@
      * @param tmpl {string} 模板
      * @returns {string} 输出的html
      */
-    f.range = function (list, tmpl) {
+    r.addFunc('range', function (list, tmpl) {
         var html = '';
         if (tmpl) {
             tmpl = tmpl.replace(/\(/g, '{').replace(/\)/g, '}');
@@ -176,7 +175,7 @@
             }
         }
         return html;
-    };
+    });
     /**
      * 过滤html字符，因为系统默认已过滤html，所以此函数一般外部不使用
      *
@@ -188,9 +187,9 @@
      * @param html {string} 待过滤的html代码
      * @returns {string}
      */
-    f.filter_html = function (html) {
+    r.addFunc('filter_html', function (html) {
         return r.util.html(html);
-    };
+    });
     /**
      * 从左侧按指定长度截断字串，注意一个汉字按2个字符计算，这样可以准确的控制格式
      *
@@ -205,7 +204,7 @@
      * @param dot {string} [可选] 截断后补充的串，示例:"..."
      * @returns {string}
      */
-    f.left = function (str, len, dot) {
+    r.addFunc('left', function (str, len, dot) {
         var newLength = 0;
         var newStr = "";
         var chineseRegex = /[^\x00-\xff]/g;
@@ -231,5 +230,5 @@
             newStr += singleChar;
         }
         return newStr;
-    };
+    });
 })(window.Render);

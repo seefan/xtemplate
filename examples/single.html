@@ -1,6 +1,7 @@
 <html>
 <head>
     <title>单变量绑定</title>
+    <script src="../libs/ieBetter.js"></script>
     <script src="../dist/xtemplate.js"></script>
 
     <meta charset="utf-8">
@@ -13,7 +14,7 @@
     <li>原始值按html输出：<p data-bind="content" data-bind-to="innerHTML"></p></li>
     <li>原始值的模板输出：<b data-bind="market_product_id" data-bind-to="title" title="{!content}">title</b></li>
     <li>img的src绑定：<img data-bind="thumb"></p></li>
-    <li>img的复杂src绑定：<img data-bind="thumb" data-bind-src="{thumb1|default,'logo.jpg'}"></p>
+    <li>img的复杂src绑定：<img data-bind="thumb" data-bind-src="{thumb|default,'logo.jpg'}"></p>
         ，这里不使用data-bind-to指定src，是因为如果使用了模板的src，将会使浏览器产生一个无效的http请求。
     </li>
     <li>使用内部函数处理输出结果：<p data-bind="product_name" data-bind-to="innerHTML">
@@ -60,7 +61,7 @@
     }
     XTemplate.ready(function () {
         Render.bindData(data.data[0]);
-        Render.bindData('data1', data.data[0]);
+        //Render.bindData('data1', data.data[0]);
     });
 </script>
 </body>

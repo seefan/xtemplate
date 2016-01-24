@@ -276,7 +276,6 @@
     //工具
     r.util = {};
 
-
     /**
      * 绑定数据值
      *
@@ -294,9 +293,10 @@
      * @param data 要绑定的数据
      */
     r.bindData = function (name, data) {
+
         if (typeof data === 'undefined') {
             data = name;
-            name = '__data';
+            name = '__data__';
         }
         w.$scope[name] = data;
         var items = doc.querySelectorAll('[data-bind]');
@@ -304,17 +304,19 @@
         for (i = 0; i < items.length; i++) {
             value = '';
             key = items[i].attributes['data-bind'].value;
-            var bs = this.util.getBindToNameList(items[i]);//data-bind-to
+            var bs = this.util.getBindToNameList(items[i]),
+                m = 0;//data-bind-to
+
             if (bs.length > 0) {
-                for (var m in bs) {
+                for (; m < bs.length; m++) {
                     attrName = bs[m];
-                    if (items[i].attributes.hasOwnProperty(attrName)) {
+                    if (items[i].attributes[attrName]) {
                         tpl = items[i].attributes[attrName].value;
                     } else {
                         tpl = items[i][attrName];
                     }
                     //var xf = r.syntax.buildFunc(key, tpl);
-                    var xf = r.syntax.cacheFunc('bind', key, tpl);
+                    var xf = r.syntax.cacheFunc('bind', tpl, tpl);
                     if (xf) {
                         value = xf(this, data);
                     } else {
@@ -329,9 +331,9 @@
 
             } else {
                 //单独处理一下img的data-bind-src，使用模板
-                if (items[i].tagName == 'IMG' && items[i].attributes.hasOwnProperty('data-bind-src')) {
+                if (items[i].tagName == 'IMG' && items[i].attributes['data-bind-src']) {
                     //var xff = r.syntax.buildFunc(key, items[i].attributes['data-bind-src'].value);
-                    var xff = r.syntax.cacheFunc('bind', key, items[i].attributes['data-bind-src'].value);
+                    var xff = r.syntax.cacheFunc('bind', items[i].attributes['data-bind-src'].value, items[i].attributes['data-bind-src'].value);
                     if (xff) {
                         value = xff(this, data);
                     } else {
@@ -455,10 +457,22 @@
     u.trim = function (val) {
         if (typeof(val) == 'string') {
             return val.replace(/\r/g, '').replace(/\n/g, '').replace('　', '').trim();
-        } else {
+        } else if (u.isPlainObject(val)) {
             return u.trim(u.getDefaultValue(val));
+        } else {
+            return String.valueOf(val);
         }
     };
+    /**
+     * 是否是一个简单的对象
+     * @method isPlainObject
+     * @param value 目标对象
+     * @returns {boolean}
+     */
+    u.isPlainObject = function (value) {
+        return !!value && Object.prototype.toString.call(value) === '[object Object]';
+    };
+
     /**
      * 给指定html网页中对象设置值，目前对img设置src，input设置value，其它设置innerHTML。
      * 此方法内部用。
@@ -472,7 +486,7 @@
         if (bs.length > 0) {
             for (i in bs) {
                 var attrName = bs[i];
-                if (ele.attributes.hasOwnProperty(attrName)) {
+                if (ele.attributes[attrName]) {
                     ele.setAttribute(attrName, value);
                 } else {
                     ele[attrName] = value;
@@ -521,8 +535,11 @@
      * @param val 要判断的变量
      * @returns {boolean} 是否为数组
      */
-    u.isArray = function (val) {
-        return toString.apply(val) === "[object Array]";
+    //u.isArray = function (val) {
+    //    return toString.apply(val) === "[object Array]";
+    //};
+    u.isArray = Array.isArray || function (object) {
+        return object instanceof Array;
     };
     /**
      * 取数组的key全集，内部使用
@@ -545,7 +562,7 @@
                     var names = [];
                     for (var k in value) {
                         //跳过非属性
-                        if (value.hasOwnProperty(k)) {
+                        if (value[k]) {
                             var tkv = u.getName(k, value);
                             for (var i = 0; i < tkv.length; i++) {
                                 names.push(key + '.' + tkv[i]);
@@ -653,8 +670,8 @@
         var re = [];
         if (binds && binds.value) {
             var sps = binds.value.split(' ');
-            var tmp;
-            for (var i in sps) {
+            var tmp, i = 0;
+            for (; i < sps.length; i++) {
                 tmp = u.trim(sps[i]);
                 if (tmp !== '') {
                     re.push(tmp);
@@ -677,7 +694,7 @@
                 if (ele.style.display == 'none') {
                     ele.style.display = '';
                 }
-                if (ele.classList.contains('hide')) {
+                if (ele.classList && ele.classList.contains('hide')) {
                     ele.classList.remove('hide');
                 }
             } else {
@@ -724,6 +741,8 @@
  * Render 的语法定义
  */
 (function (r) {
+
+
     /**
      * 将数据与模块绑定
      * @param tmpl
@@ -734,11 +753,12 @@
         while (i < tmpl.length) {
             start = tmpl.indexOf('{', i);
             if (start !== -1) {
-                end = tmpl.indexOf('}', start + 1);
+                end = getEnd(tmpl, start, '}');
                 if (end === -1) {
                     end = tmpl.length;
                 }
                 word = tmpl.substring(start + 1, end).trim();
+
                 result.push(runText(tmpl.substring(i, start)));
                 if (word !== '') {
                     result.push(runKeyword(word));
@@ -758,7 +778,7 @@
      */
     function runText(text) {
         if (typeof(text) == 'string') {
-            return '"' + text.replace(/\"/g, '\\"').replace(/\r/g, '\\r').replace(/\n/g, '\\n').replace('data-bind-src', 'src') + '"';
+            return '"' + text.replace(/"/g, '\\"').replace(/\r/g, '\\r').replace(/\n/g, '\\n').replace('data-bind-src', 'src') + '"';
         } else {
             return r.util.getStringValue(text);
         }
@@ -775,12 +795,14 @@
             funcString = funcString.substring(1);
             filterHtml = false;
         }
-        var f = splitWord(funcString);
-        if (f.length > 0) {
-            if (filterHtml) {
-                return 'Render.util.html(' + runFuncString(f, f.length - 1) + ')';
-            } else {
-                return runFuncString(f, f.length - 1);
+        if (funcString) {
+            var f = splitWord(funcString);
+            if (f.length > 0) {
+                if (filterHtml) {
+                    return 'Render.util.html(' + runFuncString(f, f.length - 1) + ')';
+                } else {
+                    return runFuncString(f, f.length - 1);
+                }
             }
         }
         return '""';
@@ -805,7 +827,9 @@
                     for (j = array.length; j > 0; j--) {
                         args += runValue(array[j - 1]);
                     }
+
                     args = runFuncString(funcs, i - 1) + args;
+
                     return runFunc(funcName) + '(' + args + ')';
                 } else {
                     array.push(funcs[i]);
@@ -820,13 +844,7 @@
         } else {
             return runValue(funcs[0]);
         }
-        //for (i = funcs.length - 1; i >= 0; i++) {
-        //    if (funcs[i] === '|') {//发现一个函数
-        //        array.reserved();
-        //    } else {
-        //        array.push(funcs[i]);
-        //    }
-        //}
+
         return '';
     }
 
@@ -836,10 +854,10 @@
      * @returns {string}
      */
     function runFunc(funcName) {
-        if (funcName && funcName.length > 1 && funcName[0] == '#') {
+        if (funcName && funcName.length > 1 && funcName.charAt(0) == '#') {
             return funcName.substring(1);
         } else if (r.funcs[funcName]) {
-            return 'my.funcs.' + funcName;
+            return 'my.funcs["' + funcName + '"]';
         } else {
             return 'my.funcs.noFunc';
         }
@@ -856,7 +874,7 @@
      */
     function runValue(word) {
         var val = '';
-        switch (word[0]) {
+        switch (word.charAt(0)) {
             case '+':
             case "-":
             case '*':
@@ -900,66 +918,65 @@
      * @returns {Array}
      */
     function splitWord(word) {
-        var arr = [], start = 0, end = 0, key, pop = 0;
+        var arr = [], key = '', end = 0, value;
         for (var i = 0; i < word.length; i++) {
-            switch (word[i]) {
+            value = word.charAt(i);
+            switch (value) {
                 case '|':
                 case ',':
                 case '+':
                 case '-':
                 case '*':
                 case '/':
-                    if (i > start) {
-                        key = word.substring(start, i);
-                        if (key.trim() !== '') {
-                            arr.push(key.trim());
-                        }
+                    if (key !== '') {
+                        arr.push(key);
+                        key = '';
                     }
-                    arr.push(word[i]);
-                    start = i + 1;
-                    break;
-                case '(':
-                case ')':
-                    arr.push(word[i]);
-                    start = i;
+                    arr.push(value);
                     break;
                 case '"':
                 case "'":
-                    if (i > start) {
-                        key = word.substring(start, i).trim();
-                        if (key !== '') {
-                            arr.push(key);
-                        }
+                    if (key !== '') {
+                        arr.push(key);
+                        key = '';
                     }
-                    end = getEnd(word, i);
+                    end = getEnd(word, i, value);
                     if (end > 0) {
                         arr.push(word.substring(i, end + 1));
                         i = end;
-                        start = i + 1;
+                    }
+                    break;
+                default :
+                    if (value && value !== ' ') {
+                        key += value;
                     }
                     break;
             }
-
         }
-        if (word.length > start) {
-            key = word.substring(start, word.length).trim();
-            if (key !== '') {
-                arr.push(key);
-            }
+        if (key !== '') {
+            arr.push(key);
         }
         return arr;
     }
 
     /**
-     * 根据单词开始取结尾
+     * 根据单词开始取结尾,
      * @param word
      * @param i
+     * @param ec
      * @returns {*}
      */
-    function getEnd(word, i) {
+    function getEnd(word, i, ec) {
         for (var j = i + 1; j < word.length; j++) {
-            if (word[j] == word[i]) {
+            if (word.charAt(j) == ec) {//找到结尾
                 return j;
+            } else if (word.charAt(j) == '"' || word.charAt(j) == "'") {
+                i = getEnd(word, j, word.charAt(j));
+                if (i === 0) {
+                    return 0;
+                } else {
+                    j = i;
+                }
             }
         }
         return 0;
@@ -988,7 +1005,8 @@
                 return new Function('my', 'vo', funcBody);
                 /* jshint ignore:end */
             } catch (e) {
-                console.log('解析模板' + name + ':' + tpl + '出错，' + e.message);
+                console.log('解析模板' + name + '出错，' + e.message);
+                console.log(funcBody);
             }
         }
         return false;
@@ -1035,7 +1053,6 @@
  */
 (function (r) {
     'use strict';
-    var f = window.Render.funcs;
     /**
      * 指定输出的默认值，如果有值就原样输出，如果空或是null，就输出默认值。
      *
@@ -1048,12 +1065,12 @@
      * @param defaultVal 默认值
      * @returns {object}
      */
-    f.default = function (val, defaultVal) {
+    r.addFunc('default', function (val, defaultVal) {
         if (typeof(val) == 'undefined' || val === '' || val === 'null') {
             return defaultVal;
         }
         return val;
-    };
+    });
     /**
      * 根据设定值返回指定内容
      *
@@ -1067,14 +1084,14 @@
      * @param val {string} 变量名
      * @returns {object}
      */
-    f.case = function (val) {
+    r.addFunc('case', function (val) {
         for (var i = 1; i < arguments.length; i += 2) {
             if (val == arguments[i] && i < arguments.length - 1) {
                 return arguments[i + 1];
             }
         }
         return arguments[arguments.length - 1];
-    };
+    });
     /**
      * 格式化货币，最少小数显示，
      * 示例：
@@ -1087,9 +1104,9 @@
      * @param val {string} 变量名
      * @returns {number}
      */
-    f.format_money = function (val) {
+    r.addFunc('format_money', function (val) {
         return parseFloat(val);
-    };
+    });
 
 
     /**
@@ -1107,7 +1124,7 @@
      * @param fmt {string} 格式串
      * @returns {string} 格式化后的日期串
      */
-    f.format_date = function (val, fmt) {
+    r.addFunc('format_date', function (val, fmt) {
         if (typeof(val) != 'object') {
             val = new Date(parseInt(val));
         }
@@ -1130,7 +1147,7 @@
                 fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (format_data_o[k]) : (("00" + format_data_o[k]).substr(("" + format_data_o[k]).length)));
         return fmt;
 
-    };
+    });
     /**
      * 数字保留小数位数
      * 示例：
@@ -1142,7 +1159,7 @@
      * @param c {number} 保留的小数位置，默认为0
      * @returns {number}
      */
-    f.fixed = function (val, c) {
+    r.addFunc('fixed', function (val, c) {
         if (typeof c == 'undefined') {
             c = 0;
         }
@@ -1151,16 +1168,16 @@
         } else {
             return val;
         }
-    };
+    });
     /**
      * 没有正确的函数处理时，用此函数处理，直接输出变量值
      * 外部不要使用
      * @param val {string} 变量名
      * @returns {string}
      */
-    f.noFunc = function (val) {
+    r.addFunc('noFunc', function (val) {
         return '没有找到正确的处理函数';
-    };
+    });
     /**
      * 重复输出num次val
      *
@@ -1173,13 +1190,13 @@
      * @param res {string}要重复的内容
      * @returns {string}
      */
-    f.repeat = function (val, res) {
+    r.addFunc('repeat', function (val, res) {
         var result = '';
         for (var i = 0; i < val; i++) {
             result += res;
         }
         return result;
-    };
+    });
     /**
      * 内部实现简单的循环，注意，内部模板和普通模板有区别，需要使用小括号代替大扩号。
      * 常用于嵌套循环显示。
@@ -1193,7 +1210,7 @@
      * @param tmpl {string} 模板
      * @returns {string} 输出的html
      */
-    f.range = function (list, tmpl) {
+    r.addFunc('range', function (list, tmpl) {
         var html = '';
         if (tmpl) {
             tmpl = tmpl.replace(/\(/g, '{').replace(/\)/g, '}');
@@ -1205,7 +1222,7 @@
             }
         }
         return html;
-    };
+    });
     /**
      * 过滤html字符，因为系统默认已过滤html，所以此函数一般外部不使用
      *
@@ -1217,9 +1234,9 @@
      * @param html {string} 待过滤的html代码
      * @returns {string}
      */
-    f.filter_html = function (html) {
+    r.addFunc('filter_html', function (html) {
         return r.util.html(html);
-    };
+    });
     /**
      * 从左侧按指定长度截断字串，注意一个汉字按2个字符计算，这样可以准确的控制格式
      *
@@ -1234,7 +1251,7 @@
      * @param dot {string} [可选] 截断后补充的串，示例:"..."
      * @returns {string}
      */
-    f.left = function (str, len, dot) {
+    r.addFunc('left', function (str, len, dot) {
         var newLength = 0;
         var newStr = "";
         var chineseRegex = /[^\x00-\xff]/g;
@@ -1260,14 +1277,13 @@
             newStr += singleChar;
         }
         return newStr;
-    };
+    });
 })(window.Render);;/**
  * XTemplate，简单快速的将json数据绑定到html上
  * @class XTemplate
  */
-(function (d, w, x) {
+(function (d, w, x,r) {
     'use strict';
-    var r = w.Render;
     //是否已初始化
     x.isInit = false;
     //是否使用其它的ajax方法，默认使用jquery
@@ -1291,7 +1307,7 @@
      * 初始化
      */
     x.init = function () {
-        if (r) {
+        if (!x.isInit) {
             x.isInit = true;
             if (x.callback) {
                 x.callback();
@@ -1434,7 +1450,7 @@
                 }
             }
             if (ok) {
-                if (toString.apply(data) == "[object Array]") {
+                if (r.util.isArray(data)) {
                     r.bindRepeatData(id, data);
                 } else {
                     if (id) {
@@ -1464,17 +1480,26 @@
     x.setAjax = function (ajax) {
         this.optAjax = ajax;
     };
-
-    //开始初始化将执行ready方法
-    function testReady() {
+    var testReady = function () {
         if (/complete|loaded|interactive/.test(document.readyState) && document.body) {
             x.init();
-        } else {
-            setTimeout(function () {
+            return true;
+        }
+        return false;
+    };
+    var timeReady = function () {
+        if (!testReady()) {
+            setTimeout(timeReady, 5);
+        }
+    };
+    //开始初始化将执行ready方法
+    if (!testReady()) {
+        if (document.addEventListener) {
+            document.addEventListener('DOMContentLoaded', function () {
                 testReady();
-            }, 1);
+            }, false);
+        } else {
+            setTimeout(timeReady, 5);
         }
     }
-
-    testReady();
-})(document, window, window.XTemplate = {});
+})(document, window, window.XTemplate = {},window.Render);

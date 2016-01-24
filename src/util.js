@@ -13,10 +13,22 @@
     u.trim = function (val) {
         if (typeof(val) == 'string') {
             return val.replace(/\r/g, '').replace(/\n/g, '').replace('　', '').trim();
-        } else {
+        } else if (u.isPlainObject(val)) {
             return u.trim(u.getDefaultValue(val));
+        } else {
+            return String.valueOf(val);
         }
     };
+    /**
+     * 是否是一个简单的对象
+     * @method isPlainObject
+     * @param value 目标对象
+     * @returns {boolean}
+     */
+    u.isPlainObject = function (value) {
+        return !!value && Object.prototype.toString.call(value) === '[object Object]';
+    };
+
     /**
      * 给指定html网页中对象设置值，目前对img设置src，input设置value，其它设置innerHTML。
      * 此方法内部用。
@@ -30,7 +42,7 @@
         if (bs.length > 0) {
             for (i in bs) {
                 var attrName = bs[i];
-                if (ele.attributes.hasOwnProperty(attrName)) {
+                if (ele.attributes[attrName]) {
                     ele.setAttribute(attrName, value);
                 } else {
                     ele[attrName] = value;
@@ -79,8 +91,11 @@
      * @param val 要判断的变量
      * @returns {boolean} 是否为数组
      */
-    u.isArray = function (val) {
-        return toString.apply(val) === "[object Array]";
+    //u.isArray = function (val) {
+    //    return toString.apply(val) === "[object Array]";
+    //};
+    u.isArray = Array.isArray || function (object) {
+        return object instanceof Array;
     };
     /**
      * 取数组的key全集，内部使用
@@ -103,7 +118,7 @@
                     var names = [];
                     for (var k in value) {
                         //跳过非属性
-                        if (value.hasOwnProperty(k)) {
+                        if (value[k]) {
                             var tkv = u.getName(k, value);
                             for (var i = 0; i < tkv.length; i++) {
                                 names.push(key + '.' + tkv[i]);
@@ -211,8 +226,8 @@
         var re = [];
         if (binds && binds.value) {
             var sps = binds.value.split(' ');
-            var tmp;
-            for (var i in sps) {
+            var tmp, i = 0;
+            for (; i < sps.length; i++) {
                 tmp = u.trim(sps[i]);
                 if (tmp !== '') {
                     re.push(tmp);
@@ -235,7 +250,7 @@
                 if (ele.style.display == 'none') {
                     ele.style.display = '';
                 }
-                if (ele.classList.contains('hide')) {
+                if (ele.classList && ele.classList.contains('hide')) {
                     ele.classList.remove('hide');
                 }
             } else {
