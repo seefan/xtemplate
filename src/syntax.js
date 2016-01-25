@@ -2,6 +2,8 @@
  * Render 的语法定义
  */
 (function (r) {
+
+
     /**
      * 将数据与模块绑定
      * @param tmpl
@@ -12,11 +14,12 @@
         while (i < tmpl.length) {
             start = tmpl.indexOf('{', i);
             if (start !== -1) {
-                end = tmpl.indexOf('}', start + 1);
+                end = getEnd(tmpl, start, '}');
                 if (end === -1) {
                     end = tmpl.length;
                 }
                 word = tmpl.substring(start + 1, end).trim();
+
                 result.push(runText(tmpl.substring(i, start)));
                 if (word !== '') {
                     result.push(runKeyword(word));
@@ -36,7 +39,7 @@
      */
     function runText(text) {
         if (typeof(text) == 'string') {
-            return '"' + text.replace(/\"/g, '\\"').replace(/\r/g, '\\r').replace(/\n/g, '\\n').replace('data-bind-src', 'src') + '"';
+            return '"' + text.replace(/"/g, '\\"').replace(/\r/g, '\\r').replace(/\n/g, '\\n').replace('data-bind-src', 'src') + '"';
         } else {
             return r.util.getStringValue(text);
         }
@@ -53,12 +56,14 @@
             funcString = funcString.substring(1);
             filterHtml = false;
         }
-        var f = splitWord(funcString);
-        if (f.length > 0) {
-            if (filterHtml) {
-                return 'Render.util.html(' + runFuncString(f, f.length - 1) + ')';
-            } else {
-                return runFuncString(f, f.length - 1);
+        if (funcString) {
+            var f = splitWord(funcString);
+            if (f.length > 0) {
+                if (filterHtml) {
+                    return 'Render.util.html(' + runFuncString(f, f.length - 1) + ')';
+                } else {
+                    return runFuncString(f, f.length - 1);
+                }
             }
         }
         return '""';
@@ -83,7 +88,9 @@
                     for (j = array.length; j > 0; j--) {
                         args += runValue(array[j - 1]);
                     }
+
                     args = runFuncString(funcs, i - 1) + args;
+
                     return runFunc(funcName) + '(' + args + ')';
                 } else {
                     array.push(funcs[i]);
@@ -98,13 +105,7 @@
         } else {
             return runValue(funcs[0]);
         }
-        //for (i = funcs.length - 1; i >= 0; i++) {
-        //    if (funcs[i] === '|') {//发现一个函数
-        //        array.reserved();
-        //    } else {
-        //        array.push(funcs[i]);
-        //    }
-        //}
+
         return '';
     }
 
@@ -114,10 +115,10 @@
      * @returns {string}
      */
     function runFunc(funcName) {
-        if (funcName && funcName.length > 1 && funcName[0] == '#') {
+        if (funcName && funcName.length > 1 && funcName.charAt(0) == '#') {
             return funcName.substring(1);
         } else if (r.funcs[funcName]) {
-            return 'my.funcs.' + funcName;
+            return 'my.funcs["' + funcName + '"]';
         } else {
             return 'my.funcs.noFunc';
         }
@@ -134,7 +135,7 @@
      */
     function runValue(word) {
         var val = '';
-        switch (word[0]) {
+        switch (word.charAt(0)) {
             case '+':
             case "-":
             case '*':
@@ -178,66 +179,65 @@
      * @returns {Array}
      */
     function splitWord(word) {
-        var arr = [], start = 0, end = 0, key, pop = 0;
+        var arr = [], key = '', end = 0, value;
         for (var i = 0; i < word.length; i++) {
-            switch (word[i]) {
+            value = word.charAt(i);
+            switch (value) {
                 case '|':
                 case ',':
                 case '+':
                 case '-':
                 case '*':
                 case '/':
-                    if (i > start) {
-                        key = word.substring(start, i);
-                        if (key.trim() !== '') {
-                            arr.push(key.trim());
-                        }
+                    if (key !== '') {
+                        arr.push(key);
+                        key = '';
                     }
-                    arr.push(word[i]);
-                    start = i + 1;
-                    break;
-                case '(':
-                case ')':
-                    arr.push(word[i]);
-                    start = i;
+                    arr.push(value);
                     break;
                 case '"':
                 case "'":
-                    if (i > start) {
-                        key = word.substring(start, i).trim();
-                        if (key !== '') {
-                            arr.push(key);
-                        }
+                    if (key !== '') {
+                        arr.push(key);
+                        key = '';
                     }
-                    end = getEnd(word, i);
+                    end = getEnd(word, i, value);
                     if (end > 0) {
                         arr.push(word.substring(i, end + 1));
                         i = end;
-                        start = i + 1;
+                    }
+                    break;
+                default :
+                    if (value && value !== ' ') {
+                        key += value;
                     }
                     break;
             }
-
         }
-        if (word.length > start) {
-            key = word.substring(start, word.length).trim();
-            if (key !== '') {
-                arr.push(key);
-            }
+        if (key !== '') {
+            arr.push(key);
         }
         return arr;
     }
 
     /**
-     * 根据单词开始取结尾
+     * 根据单词开始取结尾,
      * @param word
      * @param i
+     * @param ec
      * @returns {*}
      */
-    function getEnd(word, i) {
+    function getEnd(word, i, ec) {
         for (var j = i + 1; j < word.length; j++) {
-            if (word[j] == word[i]) {
+            if (word.charAt(j) == ec) {//找到结尾
                 return j;
+            } else if (word.charAt(j) == '"' || word.charAt(j) == "'") {
+                i = getEnd(word, j, word.charAt(j));
+                if (i === 0) {
+                    return 0;
+                } else {
+                    j = i;
+                }
             }
         }
         return 0;
@@ -266,7 +266,8 @@
                 return new Function('my', 'vo', funcBody);
                 /* jshint ignore:end */
             } catch (e) {
-                console.log('解析模板' + name + ':' + tpl + '出错，' + e.message);
+                console.log('解析模板' + name + '出错，' + e.message);
+                console.log(funcBody);
             }
         }
         return false;
