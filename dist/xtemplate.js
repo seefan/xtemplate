@@ -389,7 +389,9 @@
         var item = document.querySelector('[data-repeat-name="' + name + '"]');
 
         var func = this.syntax.cacheFunc('repeat', name, item.innerHTML), i = 0;
-        item.innerHTML = '';
+        if (!append) {
+            item.innerHTML = '';
+        }
         if (func) {
             if (animation === true) {
                 this.appendData(data, 0, item, func, append);
