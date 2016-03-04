@@ -740,7 +740,7 @@
      */
     u.removeClass = function (ele, className) {
         if (ele.classList) {
-            if (!ele.classList.contains(className)) {
+            if (ele.classList.contains(className)) {
                 ele.classList.remove(className);
             }
         } else {
