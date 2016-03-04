@@ -696,11 +696,64 @@
                 if (ele.style.display == 'none') {
                     ele.style.display = '';
                 }
-                if (ele.classList && ele.classList.contains('hide')) {
-                    ele.classList.remove('hide');
-                }
+                u.removeClass(ele,'hide');
             } else {
                 ele.style.display = 'none';
+            }
+        }
+    };
+    /**
+     * 增加一个class
+     * @method setValue
+     * @param ele
+     * @param className
+     */
+    u.addClass = function (ele, className) {
+        if (ele.classList) {
+            if (!ele.classList.contains(className)) {
+                ele.classList.add(className);
+            }
+        } else {
+            var css = ele.className;
+            if (css) {
+                var csss = css.split(' '), exists = false;
+                for (var i = 0; i < csss.length; i++) {
+                    if (csss[i] == className) {
+                        exists = true;
+                    }
+                }
+                if (!exists) {
+                    csss.push(className);
+                }
+                css = csss.join(' ');
+            } else {
+                css = className;
+            }
+            ele.className = css;
+        }
+    };
+    /**
+     * 删除一个class
+     * @method setValue
+     * @param ele
+     * @param className
+     */
+    u.removeClass = function (ele, className) {
+        if (ele.classList) {
+            if (!ele.classList.contains(className)) {
+                ele.classList.remove(className);
+            }
+        } else {
+            var css = ele.className;
+            if (css) {
+                var csss = css.split(' ');
+                css = '';
+                for (var i = 0; i < csss.length; i++) {
+                    if (csss[i] != className) {
+                        css += csss[i];
+                    }
+                }
+                ele.className = css;
             }
         }
     };
