@@ -387,8 +387,8 @@
             return;
         }
         var item = document.querySelector('[data-repeat-name="' + name + '"]');
-
-        var func = this.syntax.cacheFunc('repeat', name, item.innerHTML), i = 0;
+        var isTemplate = {Yes: false};
+        var func = this.syntax.cacheFunc('repeat', name, item.innerHTML, isTemplate), i = 0;
         if (!append) {
             item.innerHTML = '';
         }
@@ -1087,18 +1087,22 @@
     };
     /**
      * 返回有缓存的方法
-     * @param id
+     * @param type 类型
+     * @param id 标识
+     * @param html 模板内容
      * @returns {*}
      */
     r.syntax.cacheFunc = function (type, id, html) {
         var f = this.cache[type + '-func-' + id];
+        var re = {func: f};
         if (!f) {
             f = this.buildFunc(id, html);
             if (f) {
                 this.cache[type + '-func-' + id] = f;
+                re.isFirst = true;
             }
         }
-        return f;
+        return re;
     };
 })(window.Render);;/**
  * XTemplate 所有的扩展函数集合，用于处理html中常见的格式转换，默认值等处理。

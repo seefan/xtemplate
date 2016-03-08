@@ -293,17 +293,21 @@
     };
     /**
      * 返回有缓存的方法
-     * @param id
+     * @param type 类型
+     * @param id 标识
+     * @param html 模板内容
      * @returns {*}
      */
     r.syntax.cacheFunc = function (type, id, html) {
         var f = this.cache[type + '-func-' + id];
+        var re = {func: f};
         if (!f) {
             f = this.buildFunc(id, html);
             if (f) {
                 this.cache[type + '-func-' + id] = f;
+                re.isFirst = true;
             }
         }
-        return f;
+        return re;
     };
 })(window.Render);

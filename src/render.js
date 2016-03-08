@@ -317,8 +317,8 @@
                     }
                     //var xf = r.syntax.buildFunc(key, tpl);
                     var xf = r.syntax.cacheFunc('bind', tpl, tpl);
-                    if (xf) {
-                        value = xf(this, data);
+                    if (xf.func) {
+                        value = xf.func(this, data);
                     } else {
                         //如果简单的绑定innerHTML,就不再转为纯文本了
                         if (attrName === 'innerHTML') {
@@ -334,8 +334,8 @@
                 if (items[i].tagName == 'IMG' && items[i].attributes['data-bind-src']) {
                     //var xff = r.syntax.buildFunc(key, items[i].attributes['data-bind-src'].value);
                     var xff = r.syntax.cacheFunc('bind', items[i].attributes['data-bind-src'].value, items[i].attributes['data-bind-src'].value);
-                    if (xff) {
-                        value = xff(this, data);
+                    if (xff.func) {
+                        value = xff.func(this, data);
                     } else {
                         value = this.util.getValue(key, data);//不需要html转义
                     }
@@ -387,11 +387,12 @@
             return;
         }
         var item = document.querySelector('[data-repeat-name="' + name + '"]');
-
-        var func = this.syntax.cacheFunc('repeat', name, item.innerHTML), i = 0;
-        if (!append) {
+        var isTemplate = {Yes: false};
+        var cache = this.syntax.cacheFunc('repeat', name, item.innerHTML, isTemplate), i = 0;
+        if (!append||cache.isFirst) {
             item.innerHTML = '';
         }
+        var func=cache.func;
         if (func) {
             if (animation === true) {
                 this.appendData(data, 0, item, func, append);
