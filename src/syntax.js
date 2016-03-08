@@ -306,6 +306,7 @@
             if (f) {
                 this.cache[type + '-func-' + id] = f;
                 re.isFirst = true;
+                re.func = f;
             }
         }
         return re;

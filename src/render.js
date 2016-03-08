@@ -387,8 +387,8 @@
             return;
         }
         var item = document.querySelector('[data-repeat-name="' + name + '"]');
-        var isTemplate = {Yes: false};
-        var cache = this.syntax.cacheFunc('repeat', name, item.innerHTML, isTemplate), i = 0;
+
+        var cache = this.syntax.cacheFunc('repeat', name, item.innerHTML), i = 0;
         if (!append||cache.isFirst) {
             item.innerHTML = '';
         }
