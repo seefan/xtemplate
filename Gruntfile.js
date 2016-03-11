@@ -68,6 +68,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-ftpscript");
     //grunt.registerTask('test', ['jshint', 'qunit']);
 
-    grunt.registerTask('default', ['concat', 'uglify', 'jshint', 'watch', 'yuidoc', 'copy', 'ftpscript']);
+    grunt.registerTask('default', ['concat', 'jshint', 'uglify', 'watch', 'yuidoc', 'copy']);
 
 };

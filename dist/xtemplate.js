@@ -1112,7 +1112,7 @@
  *
  * @class Render.funcs
  */
-(function (r) {
+(function (r, undefined) {
     'use strict';
     /**
      * 指定输出的默认值，如果有值就原样输出，如果空或是null，就输出默认值。
@@ -1127,11 +1127,32 @@
      * @returns {object}
      */
     r.addFunc('default', function (val, defaultVal) {
-        if (typeof(val) == 'undefined' || val === '' || val === 'null') {
+        if (val === undefined || typeof(val) == 'undefined' || val === '' || val === 'null') {
             return defaultVal;
         }
         return val;
     });
+    /**
+     * 判断变量是否为空。
+     *
+     * 示例：
+     *
+     *     {name|empty,'空','不空'}
+     *
+     * @method default
+     * @param val {string} 变量名
+     * @param emptyValue 为空时显示值
+     * @param notEmptyValue 不为空时显示的值
+     * @returns {object}
+     */
+    r.addFunc('empty', function (val, emptyValue, notEmptyValue) {
+        if (val === undefined || typeof(val) == 'undefined' || val === '' || val === 'null') {
+            return emptyValue;
+        } else {
+            return notEmptyValue;
+        }
+    });
+
     /**
      * 根据设定值返回指定内容
      *
