@@ -388,11 +388,15 @@
         }
         var item = document.querySelector('[data-repeat-name="' + name + '"]');
 
+        if (!item || !item.innerHTML) {
+            return;
+        }
+
         var cache = this.syntax.cacheFunc('repeat', name, item.innerHTML), i = 0;
-        if (!append||cache.isFirst) {
+        if (!append || cache.isFirst) {
             item.innerHTML = '';
         }
-        var func=cache.func;
+        var func = cache.func;
         if (func) {
             if (animation === true) {
                 this.appendData(data, 0, item, func, append);
