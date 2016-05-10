@@ -275,7 +275,30 @@
     r.funcs = {};
     //工具
     r.util = {};
-
+    /**
+     * 初始化语法结构
+     * @param document 渲染器的有效范围
+     */
+    r.init = function () {
+        var items, i;
+        if (this.hideRepeat) {
+            items = r.querySelectorAll('[data-repeat-name]');
+            for (i = 0; i < items.length; i++) {
+                this.util.show(items[i], false);
+            }
+        }
+        if (this.hideBind) {
+            items = r.querySelectorAll('[data-bind]');
+            for (i = 0; i < items.length; i++) {
+                this.util.show(items[i], false);
+            }
+        }
+    };
+    r.querySelectorAll = function (q) {
+        if(doc.querySelectorAll) {
+            return doc.querySelectorAll(q);
+        }
+    };
     /**
      * 绑定数据值
      *
@@ -299,7 +322,10 @@
             name = '__data__';
         }
         w.$scope[name] = data;
-        var items = doc.querySelectorAll('[data-bind]');
+        var items = r.querySelectorAll('[data-bind]');
+        if(!items||!items.length){
+            return;
+        }
         var i, value, tpl, attrName, key;
         for (i = 0; i < items.length; i++) {
             value = '';
@@ -356,7 +382,7 @@
      * @param value 绑定值
      */
     r.bindName = function (name, value) {
-        var items = doc.querySelectorAll('[data-bind="' + name + '"]');
+        var items = r.querySelectorAll('[data-bind="' + name + '"]');
         if (items) {
             for (var i = 0; i < items.length; i++) {
                 this.util.setValue(items[i], value);
@@ -386,8 +412,11 @@
         if (!data || data.length < 1) {
             return;
         }
-        var item = document.querySelector('[data-repeat-name="' + name + '"]');
-
+        var items = r.querySelectorAll('[data-repeat-name="' + name + '"]');
+        if (items.length === 0) {
+            return;
+        }
+        var item = items[0];
         if (!item || !item.innerHTML) {
             return;
         }
@@ -1071,25 +1100,7 @@
         }
         return false;
     };
-    /**
-     * 初始化语法结构
-     * @param document 渲染器的有效范围
-     */
-    r.init = function (document) {
-        var items, i;
-        if (this.hideRepeat) {
-            items = document.querySelectorAll('[data-repeat-name]');
-            for (i = 0; i < items.length; i++) {
-                this.util.show(items[i], false);
-            }
-        }
-        if (this.hideBind) {
-            items = document.querySelectorAll('[data-bind]');
-            for (i = 0; i < items.length; i++) {
-                this.util.show(items[i], false);
-            }
-        }
-    };
+
     /**
      * 返回有缓存的方法
      * @param type 类型
@@ -1395,6 +1406,7 @@
     x.init = function () {
         if (!x.isInit) {
             x.isInit = true;
+            r.init();
             if (x.callback) {
                 x.callback();
             }

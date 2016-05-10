@@ -3,16 +3,17 @@
     <title>test</title>
     <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 
-    <script src="../libs/ieBetter.js"></script>
+
 
     <script src="../libs/jquery.min.js"></script>
     <script src="../dist/xtemplate.js"></script>
+    <script src="../libs/ie8.jquery.js"></script>
 </head>
 <body>
 <div id="log"></div>
 <ul>
-    <li><a href='single.html'>单变量绑定</a></li>
-    <li><a href='list.html'>数组绑定</a></li>
+    <li data-title="1"><a href='single.html'>单变量绑定</a></li>
+    <li data-title="2"><a href='list.html'>数组绑定</a></li>
 </ul>
 进行简单的运算：<p data-bind="market_product_id" data-bind-to="innerHTML">
     {list|range,'
@@ -30,6 +31,8 @@
     XTemplate.ready(function () {
         Render.bindData(data.data[0]);
     });
+    var obj = $('[data-title]');
+    console.log(obj);
 </script>
 </body>
 </html>

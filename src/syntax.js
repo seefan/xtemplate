@@ -272,25 +272,7 @@
         }
         return false;
     };
-    /**
-     * 初始化语法结构
-     * @param document 渲染器的有效范围
-     */
-    r.init = function (document) {
-        var items, i;
-        if (this.hideRepeat) {
-            items = document.querySelectorAll('[data-repeat-name]');
-            for (i = 0; i < items.length; i++) {
-                this.util.show(items[i], false);
-            }
-        }
-        if (this.hideBind) {
-            items = document.querySelectorAll('[data-bind]');
-            for (i = 0; i < items.length; i++) {
-                this.util.show(items[i], false);
-            }
-        }
-    };
+
     /**
      * 返回有缓存的方法
      * @param type 类型

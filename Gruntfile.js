@@ -65,7 +65,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks("grunt-contrib-yuidoc");
-    grunt.loadNpmTasks("grunt-ftpscript");
+    //grunt.loadNpmTasks("grunt-ftpscript");
     //grunt.registerTask('test', ['jshint', 'qunit']);
 
     grunt.registerTask('default', ['concat', 'jshint', 'uglify', 'watch', 'yuidoc', 'copy']);

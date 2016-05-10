@@ -29,6 +29,7 @@
     x.init = function () {
         if (!x.isInit) {
             x.isInit = true;
+            r.init();
             if (x.callback) {
                 x.callback();
             }
