@@ -346,4 +346,9 @@
         }
         return args;
     };
+    u.querySelectorAll = function (q) {
+        if(document.querySelectorAll) {
+            return document.querySelectorAll(q);
+        }
+    };
 })(window, window.Render.util);

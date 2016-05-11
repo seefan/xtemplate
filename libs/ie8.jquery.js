@@ -20,4 +20,4 @@
             return this.replace(/^\s+|\s+$/g, '');
         };
     }
-})(window.Render);
+})(window.Render.util);
