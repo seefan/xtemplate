@@ -11,7 +11,7 @@
 <ul>
     <li>模板输出：
         <ul data-repeat-name='data'>
-            <li>{market_product_id}:{product_name}</li>
+
         </ul>
     </li>
     <li>原始值按html输出：
@@ -70,7 +70,7 @@
         return a + '--' + b;
     }
     XTemplate.ready(function () {
-        Render.bindRepeatData(data.data);
+        Render.bindRepeatData('data',data.data,false,false,'<li>{market_product_id}:{product_name}</li>');
         Render.bindRepeatData('data1', data.data);
         Render.bindRepeatData('data2', data.data);
         Render.bindRepeatData('data3', data.data);

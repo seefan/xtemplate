@@ -319,7 +319,7 @@
         }
         w.$scope[name] = data;
         var items = r.util.querySelectorAll('[data-bind]');
-        if(!items||!items.length){
+        if (!items || !items.length) {
             return;
         }
         var i, value, tpl, attrName, key;
@@ -399,8 +399,9 @@
      * @param data 要绑定的数据
      * @param append [可选] 是否追加数据，默认为false
      * @param animation [可选] 是否追加数据，默认为false
+     * @param tpl [可选] 指定模板内容
      */
-    r.bindRepeatData = function (name, data, append, animation) {
+    r.bindRepeatData = function (name, data, append, animation, tpl) {
         if (typeof data == 'undefined') {
             data = name;
             name = 'data';
@@ -409,15 +410,23 @@
             return;
         }
         var items = r.util.querySelectorAll('[data-repeat-name="' + name + '"]');
-        if (items.length === 0) {
-            return;
-        }
-        var item = items[0];
-        if (!item || !item.innerHTML) {
-            return;
-        }
+        //if (items.length === 0) {
+        //    return;
+        //}
+        //var item = items[0];
+        //if (!item || !item.innerHTML) {
+        //    return;
+        //}
 
-        var cache = this.syntax.cacheFunc('repeat', name, item.innerHTML), i = 0;
+        for (var i = 0; i < items.length; i++) {
+            r.doRepeat(name + '_' + i, data, append, animation, tpl, items[i]);
+        }
+    };
+    r.doRepeat = function (name, data, append, animation, tpl, item) {
+        if (typeof tpl != 'string') {
+            tpl = item.innerHTML;
+        }
+        var cache = this.syntax.cacheFunc('repeat', name, tpl), i = 0;
         if (!append || cache.isFirst) {
             item.innerHTML = '';
         }
